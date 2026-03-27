@@ -731,7 +731,7 @@ function buildMetrics(){
     '<div class="metric"><div class="metric-label">Sålda enheter</div><div class="metric-value">'+totalA.toLocaleString('sv')+'</div><div class="metric-sub">perioden</div></div>'+
     '<div class="metric m-blue"><div class="metric-label">Försäljningsvärde</div><div class="metric-value">'+Math.round(totalForsv).toLocaleString('sv')+'</div><div class="metric-sub">kr perioden</div></div>'+
     '<div class="metric m-green"><div class="metric-label">Total marginal</div><div class="metric-value">'+Math.round(totalMarg).toLocaleString('sv')+'</div><div class="metric-sub">kr perioden</div></div>'+
-    '<div class="metric"><div class="metric-label">Marg %</div><div class="metric-value">'+avgMargP.toFixed(1)+'%</div><div class="metric-sub">marg/försäljning</div></div>'+
+    '<div class="metric m-green"><div class="metric-label">Marg %</div><div class="metric-value">'+avgMargP.toFixed(1)+'%</div><div class="metric-sub">marg/försäljning</div></div>'+
     '<div class="metric '+(avgSvP>=2?'m-danger':'')+'"'+'><div class="metric-label">FYS %</div><div class="metric-value">'+avgSvP.toFixed(1)+'%</div><div class="metric-sub">av försäljning</div></div>'+
     '<div class="metric '+(avgSvP>=2?'m-danger':'')+'"><div class="metric-label">Total FYS</div><div class="metric-value">'+Math.round(totalFF).toLocaleString('sv')+'</div><div class="metric-sub">kr förlorat</div></div>'+
     '<div class="metric"><div class="metric-label">BV %</div><div class="metric-value">'+avgBvP.toFixed(1)+'%</div><div class="metric-sub">bv/försäljning</div></div>'+
