@@ -12,7 +12,9 @@
 <body>
 
 <div id="upload-screen">
-  <div class="logo">Varuanalys</div>
+  <div class="logo">
+    <img src="img/logo.png" style="width: 458px; height: auto;">
+  </div>
   <h1 class="upload-title">Analysera din<br><span>försäljning</span></h1>
   <p class="upload-sub">Importera din Bruttovinst Artikel-rapport och få direkt insikt i vilka produkter som ska prioriteras, ses över eller plockas bort.</p>
   <div class="drop-zone" id="drop-zone">
@@ -33,7 +35,9 @@
 <div id="dashboard">
   <div class="topbar">
     <div class="topbar-left">
-      <div class="topbar-logo">Varuanalys</div>
+      <div class="topbar-logo">
+        <img src="img/logo.png" style="width: 100px; height: auto;">
+      </div>
       <div class="topbar-file" id="file-name-disp"></div>
       <div class="topbar-period" id="period-disp"></div>
     </div>
@@ -134,7 +138,7 @@
           <div style="font-size:11px;color:var(--mut);margin-bottom:12px">Säljer bra men tjänar dåligt — se över inköpspris eller försäljningspris</div>
           <div class="table-wrap"><div class="table-scroll" style="max-height:360px">
             <table><thead><tr>
-              <th>KAT</th><th>BNR</th><th>EAN</th><th>Produkt</th>
+              <th>KAT</th><th>BNR</th><th>EAN/PLU</th><th>Produkt</th>
               <th style="text-align:right">Antal</th>
               <th style="text-align:right">Marg %</th>
               <th style="text-align:right">BV kr</th>
@@ -183,11 +187,11 @@
         <span style="font-size:11px;color:var(--mut)">Visa produkter med FYS %</span>
         <span style="font-size:11px;color:var(--mut)">≥</span>
         <input type="number" id="svinn-threshold" value="2" min="0" step="0.5" style="width:60px;padding:4px 8px;font-size:11px;font-family:var(--mono);background:var(--surf2);border:1px solid var(--brd2);border-radius:6px;color:var(--txt);outline:none" oninput="buildSvinn()">
-        <span style="font-size:11px;color:var(--mut)">% — sorterade efter FYS kr (högst först)</span>
+        <span style="font-size:11px;color:var(--mut)">%</span>
       </div>
       <div class="table-wrap"><div class="table-scroll">
         <table id="svinn-table"><thead><tr>
-          <th>VOM</th><th>KAT</th><th>BNR</th><th>Produkt</th>
+          <th>VOM</th><th>KAT</th><th>BNR</th><th>EAN/PLU</th><th>Produkt</th>
           <th class="sortable nr" onclick="sortSvinn('antal')">Antal</th>
           <th class="sortable nr" onclick="sortSvinn('forsv')">Förs.värde</th>
           <th class="sortable nr" onclick="sortSvinn('ff')" id="svinn-th-ff">FYS kr</th>
@@ -214,7 +218,7 @@
       </div>
       <div class="table-wrap"><div class="table-scroll">
         <table id="katcomp-table"><thead><tr>
-          <th>BNR</th><th>EAN</th><th>Produkt</th>
+          <th>BNR</th><th>EAN/PLU</th><th>Produkt</th>
           <th class="sortable nr" onclick="sortKatComp('antal')">Antal</th>
           <th class="sortable nr" onclick="sortKatComp('dAntal')">Avvikelse</th>
           <th class="sortable nr" onclick="sortKatComp('margpct')">Marg %</th>
@@ -253,7 +257,7 @@
       <div class="print-section-title" id="prod-print-title">Produktlista</div>
       <div class="tabs" id="tier-tabs"></div>
       <div class="toolbar">
-        <input class="search-input" type="text" id="search" placeholder="Sök produkt, EAN, BNR...">
+        <input class="search-input" type="text" id="search" placeholder="Sök produkt, EAN, BNR">
         <select class="filter-select" id="sort-sel" onchange="renderTable()">
           <option value="score|desc">Poäng ↓</option>
           <option value="score|asc">Poäng ↑</option>
