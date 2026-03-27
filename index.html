@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bruttovinst Analyzer</title>
+<title>Varuanalys</title>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <style>
@@ -205,7 +205,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 <body>
 
 <div id="upload-screen">
-  <div class="logo">Bruttovinst Analyzer</div>
+  <div class="logo">Varuanalys</div>
   <h1 class="upload-title">Analysera din<br><span>försäljning</span></h1>
   <p class="upload-sub">Importera din Bruttovinst Artikel-rapport och få direkt insikt i vilka produkter som ska prioriteras, ses över eller plockas bort.</p>
   <div class="drop-zone" id="drop-zone">
@@ -226,7 +226,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 <div id="dashboard">
   <div class="topbar">
     <div class="topbar-left">
-      <div class="topbar-logo">Bruttovinst Analyzer</div>
+      <div class="topbar-logo">Varuanalys</div>
       <div class="topbar-file" id="file-name-disp"></div>
       <div class="topbar-period" id="period-disp"></div>
     </div>
@@ -1505,7 +1505,7 @@ function exportPDF(){
   var cnt=document.getElementById('row-count').textContent;
   var parts=[orig,tier,selVoms.length?'VOM: '+selVoms.join(', '):'',selKats.length?'KAT: '+selKats.join(', '):'',cnt].filter(Boolean).join(' · ');
   pd.textContent=parts;
-  document.title='Bruttovinst Analys'+(orig?' '+orig:'');
+  document.title='Varuanalys'+(orig?' '+orig:'');
 
   // Build descriptive product section title
   var sortLabels={
