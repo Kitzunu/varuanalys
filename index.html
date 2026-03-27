@@ -1460,7 +1460,7 @@ function exportExcel(){
   XS.utils.book_append_sheet(wb,wsSvinn,'Svinn Watchlist');
 
   // Sheet 5: KAT comparison — export all KATs
-  var katCompRows=[['KAT','KAT Namn','BNR','Produkt','Antal','vs KAT-snitt','Marg %','vs KAT-snitt (pp)','FYS %','vs KAT-snitt (pp)','BV kr','vs KAT-snitt','Nivå']];
+  var katCompRows=[['KAT','KAT Namn','BNR','Produkt','Antal','Avvikelse','Marg %','Avvikelse (pp)','FYS %','Avvikelse (pp)','BV kr','Avvikelse','Nivå']];
   var activeKats=[...new Set(allProducts.filter(function(p){return p.antal>0&&p.marg>0&&p.tier!=='Ignorerad'&&p.tier!=='Tobak'&&p.tier!=='Kategoriförsäljning'&&p.tier!=='Marg 99%'}).map(function(p){return p.kat}))].sort();
   activeKats.forEach(function(k){
     var prods=allProducts.filter(function(p){return p.kat===k&&p.antal>0&&p.marg>0;});
