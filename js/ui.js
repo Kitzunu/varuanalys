@@ -59,15 +59,15 @@ function setTier(t){activeTier=t;buildTabs();renderTable();saveSession()}
 
 function setView(v){
   currentView=v;
-  var views=['products','vom','kat','movers','svinn','katcomp'];
+  var views=['products','vom','kat','movers','svinn','katcomp','charts'];
   document.querySelectorAll('.view-tab').forEach(function(t,i){
     t.classList.toggle('active',views[i]===v);
   });
   document.getElementById('view-products').style.display=v==='products'?'block':'none';
-  ['vom','kat','movers','svinn','katcomp','weights'].forEach(function(k){
+  ['vom','kat','movers','svinn','katcomp','weights','charts'].forEach(function(k){
     var el=document.getElementById('view-'+k);
     el.classList.toggle('visible',v===k);
-    if(v===k){requestAnimationFrame(setTableHeight);if(k==='movers')buildMovers();if(k==='svinn')buildSvinn();if(k==='katcomp')buildKatComp();}
+    if(v===k){requestAnimationFrame(setTableHeight);if(k==='movers')buildMovers();if(k==='svinn')buildSvinn();if(k==='katcomp')buildKatComp();if(k==='charts')buildCharts();}
   });
   if(allProducts.length)saveSession();
 }
