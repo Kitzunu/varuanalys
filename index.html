@@ -8,6 +8,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <style>
 @media print {
+  :root{--grn:#007a4a;--red:#cc0000;--amb:#b36b00;--acc:#4a7c00;--acc2:#005a70;--mut:#888;--brd:#ddd;--surf2:#f5f5f5}
   body{background:#fff!important;color:#111!important;font-family:Arial,sans-serif;font-size:10px}
   #upload-screen,#loading-screen{display:none!important}
   #dashboard{display:block!important}
@@ -18,8 +19,9 @@
   .main{padding:10px 14px!important;max-width:100%!important}
   .metrics-grid{grid-template-columns:repeat(5,1fr)!important;gap:5px;margin-bottom:10px}
   .metric{padding:7px 9px!important;border:1px solid #ddd!important;background:#f9f9f9!important;border-radius:4px}
+  .m-green{background:#edfaf3!important;border-color:#b2dfc9!important} .m-blue{background:#e8f5fa!important;border-color:#b2d4e0!important} .m-danger{background:#fdecea!important;border-color:#f0bcb8!important} .m-amber{background:#fdf6e3!important;border-color:#e0cfaa!important}
   .metric-label{color:#666!important;font-size:7px} .metric-value{color:#111!important;font-size:14px!important} .metric-sub{color:#888!important;font-size:6px}
-  .m-accent .metric-value{color:#4a7c00!important} .m-danger .metric-value{color:#cc0000!important} .m-green .metric-value{color:#007a4a!important}
+  .m-accent .metric-value{color:#4a7c00!important} .m-danger .metric-value{color:#cc0000!important} .m-green .metric-value{color:#007a4a!important} .m-blue .metric-value{color:#005a70!important} .m-amber .metric-value{color:#7a4800!important}
   .legend,.view-tabs{display:none!important} .tabs{display:none!important}
   .toolbar{margin-bottom:6px} .search-input,.filter-select{display:none!important}
   .row-count{color:#666!important;font-size:9px;margin-left:0!important;display:block}
@@ -31,7 +33,9 @@
   thead th{background:#f0f0f0!important;color:#333!important;padding:4px 5px!important;border-bottom:1px solid #bbb!important;top:0!important;position:static!important}
   td{padding:3px 5px!important;border-bottom:1px solid #eee!important;color:#111!important}
   .mc{color:#555!important;font-size:7.5px!important}
-  .cr{color:#cc0000!important} .ca{color:#b36b00!important} .cg{color:#007a4a!important} .cm{color:#aaa!important}
+  td.cr,.cr{color:#cc0000!important} td.ca,.ca{color:#b36b00!important} td.cg,.cg{color:#007a4a!important} td.cm,.cm{color:#aaa!important}
+  td.cb,.cb{color:#006080!important}
+  span.cr{color:#cc0000!important} span.ca{color:#b36b00!important} span.cg{color:#007a4a!important}
   .nr{text-align:right!important}
   .badge{padding:1px 5px!important;border-radius:3px!important;font-size:7px!important;font-weight:700;border:none!important}
   .bg-p{background:#d4f08040!important;color:#3a6000!important} .bg-b{background:#d0f0f840!important;color:#005a70!important}
@@ -54,9 +58,12 @@
   .print-section-title{display:block!important;font-size:13px;font-weight:700;color:#111;margin:0 0 8px;padding-top:4px;letter-spacing:.03em}
   #view-vom{page-break-before:always}
   #view-kat{page-break-before:always}
+  #view-movers.print-visible{page-break-before:always}
+  #view-svinn.print-visible{page-break-before:always}
+  #view-katcomp.print-visible{page-break-before:always}
   .sum-table{width:100%;border-collapse:collapse;font-size:8px;margin-bottom:10px}
   .sum-table th{background:#f0f0f0!important;color:#333!important;padding:4px 6px;border:1px solid #ddd;text-align:left}
-  .sum-table td{padding:3px 6px;border:1px solid #eee;color:#111!important}
+  .sum-table td{padding:3px 6px;border:1px solid #eee;color:#111}
 }
 :root{
   --bg:#0f0f0e;--surf:#181817;--surf2:#1f1f1e;
@@ -274,6 +281,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
     <!-- Movers view -->
     <div id="view-movers" class="summary-section">
+      <div class="print-section-title">Top / Bottom</div>
 
       <!-- Threshold controls -->
       <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;background:var(--surf);border:1px solid var(--brd);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:12px">
@@ -292,6 +300,14 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <input type="number" id="mv-pot-marg" value="30" min="1" style="width:55px;padding:4px 7px;font-size:11px;font-family:var(--mono);background:var(--surf2);border:1px solid var(--brd2);border-radius:6px;color:var(--txt);outline:none" oninput="buildMovers()">
           <span style="color:var(--mut)">%</span>
         </label>
+        <div class="multi-drop" id="mv-kat-drop" style="margin-left:auto">
+          <button class="multi-btn" onclick="toggleDrop('mv-kat-drop')" style="min-width:180px">
+            <span id="mv-kat-label">Alla KAT</span><span class="drop-arrow">▾</span>
+          </button>
+          <div class="multi-menu" id="mv-kat-menu" style="min-width:280px;right:0;left:auto">
+            <input class="multi-search" id="mv-kat-search" type="text" placeholder="Sök KAT..." oninput="filterMvKat()" onclick="event.stopPropagation()">
+          </div>
+        </div>
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
@@ -345,6 +361,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
     <!-- Svinn watchlist -->
     <div id="view-svinn" class="summary-section">
+      <div class="print-section-title">Svinn Watchlist</div>
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap">
         <span style="font-size:11px;color:var(--mut)">Visa produkter med FYS %</span>
         <span style="font-size:11px;color:var(--mut)">≥</span>
@@ -368,6 +385,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
     <!-- KAT comparison -->
     <div id="view-katcomp" class="summary-section">
+      <div class="print-section-title" id="katcomp-print-title">KAT Jämförelse</div>
       <div style="font-size:11px;color:var(--mut);margin-bottom:12px">Varje produkt jämförs med snittet för sin KAT-grupp. Grön = över snitt, röd = under snitt.</div>
       <div class="toolbar" style="margin-bottom:12px">
         <div class="multi-drop" id="katcomp-drop">
@@ -883,16 +901,53 @@ function resetWeights(){
   updateWeights();
 }
 
+function setMvKatAll(state){
+  document.querySelectorAll('#mv-kat-menu input[type=checkbox]').forEach(function(cb){cb.checked=state});
+  onMvKatChange();
+}
+function onMvKatChange(){
+  var sel=Array.prototype.map.call(document.querySelectorAll('#mv-kat-menu input[type=checkbox]:checked'),function(cb){return cb.value});
+  var btn=document.querySelector('#mv-kat-drop .multi-btn');
+  var label=document.getElementById('mv-kat-label');
+  if(sel.length===0){label.textContent='Alla KAT';btn.classList.remove('active');}
+  else if(sel.length===1){label.textContent=sel[0]+(KAT_NAMES[sel[0]]?' – '+KAT_NAMES[sel[0]]:'');btn.classList.add('active');}
+  else{label.textContent=sel.length+' KAT valda';btn.classList.add('active');}
+  buildMovers();
+}
+function filterMvKat(){
+  var q=(document.getElementById('mv-kat-search').value||'').toLowerCase();
+  document.querySelectorAll('#mv-kat-menu .multi-item').forEach(function(el){
+    el.classList.toggle('hidden',q.length>0&&el.dataset.lbl.indexOf(q)===-1);
+  });
+}
+
 function buildMovers(){
   var MIN_ANTAL=parseInt(document.getElementById('mv-min').value)||50;
   var GEM_MAX=parseInt(document.getElementById('mv-gem-max').value)||200;
   var GEM_MARG=parseFloat(document.getElementById('mv-gem-marg').value)||32;
   var POT_MARG=parseFloat(document.getElementById('mv-pot-marg').value)||30;
 
+  // Populate KAT filter menu if empty
+  var mvMenu=document.getElementById('mv-kat-menu');
+  if(mvMenu.querySelectorAll('.multi-item').length===0){
+    var kats=[...new Set(allProducts.filter(function(p){return p.antal>0&&p.tier!=='Ignorerad'&&p.tier!=='Tobak'&&p.tier!=='Kategoriförsäljning'&&p.tier!=='Marg 99%'}).map(function(p){return p.kat}))].sort();
+    var menuHtml='<input class="multi-search" id="mv-kat-search" type="text" placeholder="Sök KAT..." oninput="filterMvKat()" onclick="event.stopPropagation()">';
+    menuHtml+='<div class="multi-menu-header"><button onclick="setMvKatAll(true)">Välj alla</button><button onclick="setMvKatAll(false)">Rensa</button></div>';
+    menuHtml+=kats.map(function(k){
+      var lbl=k+(KAT_NAMES[k]?' – '+KAT_NAMES[k]:'');
+      return '<label class="multi-item" data-lbl="'+lbl.toLowerCase()+'"><input type="checkbox" value="'+k+'" onchange="onMvKatChange()"> '+lbl+'</label>';
+    }).join('');
+    mvMenu.innerHTML=menuHtml;
+  }
+
+  var selKats=Array.prototype.map.call(mvMenu.querySelectorAll('input[type=checkbox]:checked'),function(cb){return cb.value});
+
   var active=allProducts.filter(function(p){
-    return p.tier!=='Ta bort'&&p.tier!=='Systemfel'&&p.tier!=='Ignorerad'&&
-           p.tier!=='Marg 99%'&&p.tier!=='Kategoriförsäljning'&&p.tier!=='Tobak'&&
-           p.antal>=MIN_ANTAL;
+    if(p.tier==='Ta bort'||p.tier==='Systemfel'||p.tier==='Ignorerad'||
+       p.tier==='Marg 99%'||p.tier==='Kategoriförsäljning'||p.tier==='Tobak')return false;
+    if(p.antal<MIN_ANTAL)return false;
+    if(selKats.length&&selKats.indexOf(p.kat)===-1)return false;
+    return true;
   });
 
   // Potential: top 30% by volume AND margin below threshold
