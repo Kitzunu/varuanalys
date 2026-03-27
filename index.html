@@ -54,24 +54,28 @@
     <div class="error-box" id="dash-error"></div>
     <div class="metrics-grid" id="metrics-grid"></div>
 
-    <div class="legend">
-      <span style="font-family:var(--disp);font-size:11px;font-weight:600;color:var(--txt)">Poängmodell:</span>
-      <span>Volym 40%</span><span>·</span><span>Marginal kr 20%</span><span>·</span><span>Marginal % 15%</span><span>·</span><span>Svinnstraff 10%</span><span>·</span><span>Bruttovinst 15%</span>
-      <span style="color:var(--brd2)">|</span>
-      <span style="cursor:pointer;color:var(--acc2)" onclick="setView('weights')" title="Klicka för att ändra vikter">⚙ Ändra vikter</span>
-      <span style="color:var(--brd2)">|</span>
-      <span title="Rangordnas relativt inom KAT. Topp 10% = Prioritet, 11–40% = Bra, 41–80% = Genomsnittlig, botten 20% = Låg">Rangordning inom KAT</span>
-      <span style="color:var(--brd2)">|</span>
-      <span><span class="legend-dot" style="background:var(--acc)"></span>Prioritet (topp 10%)</span>
-      <span><span class="legend-dot" style="background:var(--acc2)"></span>Bra (11–40%)</span>
-      <span><span class="legend-dot" style="background:#888"></span>Genomsnittlig (41–80%)</span>
-      <span><span class="legend-dot" style="background:var(--amb)"></span>Låg (botten 20%)</span>
-      <span><span class="legend-dot" style="background:var(--red)"></span>Ta bort</span>
-      <span><span class="legend-dot" style="background:var(--red)"></span>Systemfel (0 sålda)</span>
-      <span><span class="legend-dot" style="background:var(--red)"></span>Ignorerad (KAT 248 / 276 / 334 / 335 / 337 / 338 / 352)</span>
-      <span><span class="legend-dot" style="background:var(--red)"></span>Tobak (KAT 344 / 345)</span>
-      <span><span class="legend-dot" style="background:var(--red)"></span>Kategoriförsäljning (BNR = KAT)</span>
-      <span><span class="legend-dot" style="background:var(--red)"></span>Marg 99% (systemdata)</span>
+    <div>
+      <div class="legend">
+        <span style="font-family:var(--disp);font-size:11px;font-weight:600;color:var(--txt)">Poängmodell:</span>
+        <span>Volym 40%</span><span>·</span><span>Marginal kr 20%</span><span>·</span><span>Marginal % 15%</span><span>·</span><span>Svinnstraff 10%</span><span>·</span><span>Bruttovinst 15%</span>
+        <span style="color:var(--brd2)">|</span>
+        <span style="cursor:pointer;color:var(--acc2)" onclick="setView('weights')" title="Klicka för att ändra vikter">⚙ Ändra vikter</span>
+        <span style="color:var(--brd2)">|</span>
+        <span title="Rangordnas relativt inom KAT. Topp 10% = Prioritet, 11–40% = Bra, 41–80% = Genomsnittlig, botten 20% = Låg">Rangordning och poängsättning relativit inom respektive kategori</span>
+      </div>
+      <div class="legend">
+        <span style="font-family:var(--disp);font-size:11px;font-weight:600;color:var(--txt)">Grupper:</span>
+        <span><span class="legend-dot" style="background:var(--acc)"></span>Prioritet (topp 10%)</span>
+        <span><span class="legend-dot" style="background:var(--acc2)"></span>Bra (11–40%)</span>
+        <span><span class="legend-dot" style="background:#888"></span>Genomsnittlig (41–80%)</span>
+        <span><span class="legend-dot" style="background:var(--amb)"></span>Låg (botten 20%)</span>
+        <span><span class="legend-dot" style="background:var(--red)"></span>Ta bort</span>
+        <span><span class="legend-dot" style="background:var(--red)"></span>Systemfel</span>
+        <span title="Kategorier som exkluderas från överiga grupper"><span class="legend-dot" style="background:var(--red)"></span>Ignorerad (KAT 248 / 276 / 334 / 335 / 337 / 338 / 352)</span>
+        <span title="Cigaretter / Snus exkluderas från övriga grupper"><span class="legend-dot" style="background:var(--red)"></span>Tobak (KAT 344 / 345)</span>
+        <span title="BNR = KAT"><span class="legend-dot" style="background:var(--red)"></span>Kategoriförsäljning</span>
+        <span title="Artiklar med marginal ≥99% exkluderas från övriga grupper"><span class="legend-dot" style="background:var(--red)"></span>Marg 99%</span>
+      </div>
     </div>
 
     <div class="view-tabs">
