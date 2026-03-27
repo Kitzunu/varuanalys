@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bruttovinst Analyzer</title>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<style>
+@media print {
+  body{background:#fff!important;color:#111!important;font-family:Arial,sans-serif;font-size:10px}
+  #upload-screen,#loading-screen{display:none!important}
+  #dashboard{display:block!important}
+  .topbar{position:relative!important;background:#fff!important;border-bottom:1px solid #ddd;padding:10px 16px;display:flex;align-items:center;gap:12px}
+  .topbar-logo{color:#111!important;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+  .topbar-file,.topbar-period{color:#666!important;font-size:9px}
+  .btn-new{display:none!important}
+  .main{padding:10px 14px!important;max-width:100%!important}
+  .metrics-grid{grid-template-columns:repeat(5,1fr)!important;gap:5px;margin-bottom:10px}
+  .metric{padding:7px 9px!important;border:1px solid #ddd!important;background:#f9f9f9!important;border-radius:4px}
+  .metric-label{color:#666!important;font-size:7px} .metric-value{color:#111!important;font-size:14px!important} .metric-sub{color:#888!important;font-size:6px}
+  .m-accent .metric-value{color:#4a7c00!important} .m-danger .metric-value{color:#cc0000!important} .m-green .metric-value{color:#007a4a!important}
+  .legend,.view-tabs{display:none!important} .tabs{display:none!important}
+  .toolbar{margin-bottom:6px} .search-input,.filter-select{display:none!important}
+  .row-count{color:#666!important;font-size:9px;margin-left:0!important;display:block}
+  .table-wrap{border:1px solid #ddd!important;border-radius:4px}
+  .table-scroll{max-height:none!important;overflow:visible!important}
+  .sum-wrap{border:1px solid #ddd!important;border-radius:4px!important}
+  .sum-scroll{max-height:none!important;overflow:visible!important}
+  table{width:100%!important;font-size:8px!important}
+  thead th{background:#f0f0f0!important;color:#333!important;padding:4px 5px!important;border-bottom:1px solid #bbb!important;top:0!important;position:static!important}
+  td{padding:3px 5px!important;border-bottom:1px solid #eee!important;color:#111!important}
+  .mc{color:#555!important;font-size:7.5px!important}
+  .cr{color:#cc0000!important} .ca{color:#b36b00!important} .cg{color:#007a4a!important} .cm{color:#aaa!important}
+  .nr{text-align:right!important}
+  .badge{padding:1px 5px!important;border-radius:3px!important;font-size:7px!important;font-weight:700;border:none!important}
+  .bg-p{background:#d4f08040!important;color:#3a6000!important} .bg-b{background:#d0f0f840!important;color:#005a70!important}
+  .bg-g{background:#f0f0f0!important;color:#555!important} .bg-l{background:#fff0d040!important;color:#7a4800!important}
+  .bg-r{background:#ffe0e040!important;color:#900!important} .bg-sf{background:#f0d8ff40!important;color:#6600aa!important}
+  .sw{display:none!important} .tr-remove td{opacity:.6!important} tr{page-break-inside:avoid}
+  .print-score{display:inline!important}
+  .hl-p td{background:#d4f080!important;color:#2a5000!important} .hl-b td{background:#d0f0f8!important;color:#004050!important}
+  .hl-g td{background:#f0f0f0!important;color:#444!important} .hl-l td{background:#fff4d0!important;color:#7a4800!important}
+  .hl-r td,.hl-sf td{background:#ffe8e8!important;color:#800!important}
+  #view-products{display:none!important}
+  .summary-section{display:block!important}
+  #view-movers{display:none!important}
+  #pdf-kat-container{display:block!important}
+  .pdf-kat-section{page-break-before:always}
+  .pdf-kat-section:first-child{page-break-before:auto}
+  .pdf-kat-title{font-size:11px;font-weight:700;color:#111;margin:0 0 6px;padding-top:2px}
+  @page{size:A4 landscape}
+  .print-section-title{display:block!important;font-size:13px;font-weight:700;color:#111;margin:0 0 8px;padding-top:4px;letter-spacing:.03em}
+  #view-vom{page-break-before:always}
+  #view-kat{page-break-before:always}
+  .sum-table{width:100%;border-collapse:collapse;font-size:8px;margin-bottom:10px}
+  .sum-table th{background:#f0f0f0!important;color:#333!important;padding:4px 6px;border:1px solid #ddd;text-align:left}
+  .sum-table td{padding:3px 6px;border:1px solid #eee;color:#111!important}
+}
+:root{
+  --bg:#0f0f0e;--surf:#181817;--surf2:#1f1f1e;
+  --brd:rgba(255,255,255,.08);--brd2:rgba(255,255,255,.14);
+  --txt:#e8e6df;--mut:#7a7870;
+  --acc:#c8f060;--acc2:#60d4f0;--red:#f06060;--amb:#f0b860;--grn:#60d4a0;
+  --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;--disp:'Syne',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:var(--sans);min-height:100vh}
+#upload-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;position:relative}
+#upload-screen::before{content:'';position:fixed;top:-200px;left:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(200,240,96,.06),transparent 70%);pointer-events:none}
+.logo{font-family:var(--disp);font-size:13px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--acc);margin-bottom:60px;opacity:.8}
+.upload-title{font-family:var(--disp);font-size:clamp(36px,6vw,64px);font-weight:800;line-height:1.05;text-align:center;margin-bottom:16px;letter-spacing:-.02em}
+.upload-title span{color:var(--acc)}
+.upload-sub{font-size:15px;color:var(--mut);text-align:center;margin-bottom:56px;max-width:420px;line-height:1.6}
+.drop-zone{width:min(520px,100%);border:1.5px dashed var(--brd2);border-radius:16px;padding:48px 32px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surf);position:relative}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--acc);background:rgba(200,240,96,.04)}
+.drop-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.drop-icon{width:56px;height:56px;background:var(--surf2);border:1px solid var(--brd2);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:22px}
+.drop-label{font-family:var(--disp);font-size:16px;font-weight:600;margin-bottom:6px}
+.drop-hint{font-size:12px;color:var(--mut)}
+.format-note{margin-top:28px;font-size:12px;color:var(--mut);display:flex;align-items:center;gap:8px}
+.format-note span{background:var(--surf2);border:1px solid var(--brd);border-radius:4px;padding:2px 8px;font-family:var(--mono);font-size:11px}
+#loading-screen{display:none;min-height:100vh;align-items:center;justify-content:center;flex-direction:column;gap:24px}
+.spinner{width:40px;height:40px;border:2px solid var(--brd2);border-top-color:var(--acc);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-family:var(--disp);font-size:15px;color:var(--mut)}
+#dashboard{display:none}
+.topbar{padding:14px 28px;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;background:rgba(15,15,14,.95);backdrop-filter:blur(12px);z-index:100;flex-wrap:wrap}
+.topbar-left{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.topbar-logo{font-family:var(--disp);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--acc)}
+.topbar-file{font-family:var(--mono);font-size:11px;color:var(--mut)}
+.topbar-period{font-size:11px;color:var(--mut);background:var(--surf2);border:1px solid var(--brd);border-radius:6px;padding:3px 10px}
+.btn-new{font-family:var(--disp);font-size:12px;font-weight:600;padding:7px 16px;border-radius:8px;cursor:pointer;background:var(--surf2);border:1px solid var(--brd2);color:var(--txt);transition:all .15s;letter-spacing:.04em}
+.btn-new:hover{border-color:var(--acc);color:var(--acc)}
+.btn-hl.active{background:rgba(200,240,96,.1);border-color:rgba(200,240,96,.35);color:var(--acc)}
+.main{padding:24px 28px;max-width:1700px;margin:0 auto}
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px;margin-bottom:18px}
+.metric{background:var(--surf);border:1px solid var(--brd);border-radius:12px;padding:15px 18px}
+.metric-label{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.metric-value{font-family:var(--disp);font-size:22px;font-weight:700;line-height:1}
+.metric-sub{font-size:10px;color:var(--mut);margin-top:4px}
+.m-accent{border-color:rgba(200,240,96,.25);background:rgba(200,240,96,.04)} .m-accent .metric-value{color:var(--acc)}
+.m-danger{border-color:rgba(240,96,96,.2)} .m-danger .metric-value{color:var(--red)}
+.m-blue{border-color:rgba(96,212,240,.2)} .m-blue .metric-value{color:var(--acc2)}
+.m-green{border-color:rgba(96,212,160,.25);background:rgba(96,212,160,.04)} .m-green .metric-value{color:var(--grn)}
+.m-amber{border-color:rgba(240,184,96,.25);background:rgba(240,184,96,.04)} .m-amber .metric-value{color:var(--amb)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;background:var(--surf);border:1px solid var(--brd);border-radius:10px;padding:11px 16px;margin-bottom:16px;font-size:11px;color:var(--mut);align-items:center}
+.legend-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:middle}
+.view-tabs{display:flex;gap:6px;margin-bottom:14px;border-bottom:1px solid var(--brd);padding-bottom:14px}
+.view-tab{font-family:var(--disp);font-size:12px;font-weight:600;padding:6px 16px;border-radius:8px;cursor:pointer;border:1px solid var(--brd);background:var(--surf);color:var(--mut);transition:all .15s}
+.view-tab:hover{color:var(--txt);border-color:var(--brd2)}
+.view-tab.active{background:var(--surf2);border-color:var(--brd2);color:var(--txt)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tab-pill{font-family:var(--disp);font-size:12px;font-weight:600;padding:6px 14px;border-radius:100px;cursor:pointer;border:1px solid var(--brd);background:var(--surf);color:var(--mut);transition:all .15s;letter-spacing:.03em}
+.tab-pill:hover{color:var(--txt);border-color:var(--brd2)}
+.tp-all{color:var(--txt);border-color:var(--brd2);background:var(--surf2)}
+.tp-p{background:rgba(200,240,96,.1);border-color:rgba(200,240,96,.3);color:var(--acc)}
+.tp-b{background:rgba(96,212,240,.1);border-color:rgba(96,212,240,.25);color:var(--acc2)}
+.tp-g{background:rgba(255,255,255,.06);border-color:var(--brd2);color:var(--txt)}
+.tp-l{background:rgba(240,184,96,.1);border-color:rgba(240,184,96,.25);color:var(--amb)}
+.tp-r{background:rgba(240,96,96,.1);border-color:rgba(240,96,96,.25);color:var(--red)}
+.tp-sf{background:rgba(176,96,240,.1);border-color:rgba(176,96,240,.25);color:#c060f0}
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.search-input{padding:7px 12px;font-size:12px;font-family:var(--sans);background:var(--surf);border:1px solid var(--brd2);border-radius:8px;color:var(--txt);width:220px;outline:none;transition:border-color .15s}
+.search-input:focus{border-color:var(--acc)} .search-input::placeholder{color:var(--mut)}
+.filter-select{padding:7px 10px;font-size:12px;font-family:var(--sans);background:var(--surf);border:1px solid var(--brd2);border-radius:8px;color:var(--txt);outline:none;cursor:pointer}
+.multi-drop{position:relative;display:inline-block}
+.multi-btn{padding:7px 10px;font-size:12px;font-family:var(--sans);background:var(--surf);border:1px solid var(--brd2);border-radius:8px;color:var(--txt);cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;min-width:110px;transition:border-color .15s}
+.multi-btn:hover{border-color:var(--acc)}
+.multi-btn.active{border-color:var(--acc);color:var(--acc)}
+.drop-arrow{font-size:10px;color:var(--mut);margin-left:auto}
+.multi-menu{display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:200;background:var(--surf);border:1px solid var(--brd2);border-radius:10px;padding:6px;min-width:240px;max-height:320px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.multi-menu.open{display:block}
+.multi-menu-header{display:flex;gap:6px;padding:4px 4px 8px;border-bottom:1px solid var(--brd);margin-bottom:4px}
+.multi-search{width:100%;padding:5px 9px;font-size:11px;font-family:var(--sans);background:var(--surf2);border:1px solid var(--brd2);border-radius:7px;color:var(--txt);outline:none;box-sizing:border-box;margin-bottom:6px}
+.multi-search:focus{border-color:var(--acc)}
+.multi-search::placeholder{color:var(--mut)}
+.multi-item.hidden{display:none}
+.multi-menu-header button{font-size:10px;font-family:var(--disp);background:none;border:none;color:var(--mut);cursor:pointer;padding:2px 6px;border-radius:4px}
+.multi-menu-header button:hover{color:var(--txt);background:var(--surf2)}
+.multi-item{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px;cursor:pointer;font-size:12px;color:var(--txt)}
+.multi-item:hover{background:var(--surf2)}
+.multi-item input[type=checkbox]{width:13px;height:13px;accent-color:var(--acc);cursor:pointer;flex-shrink:0}
+.row-count{font-size:11px;color:var(--mut);margin-left:auto;font-family:var(--mono)}
+.table-wrap{border-radius:12px;border:1px solid var(--brd)}
+.table-scroll{overflow:auto;max-height:calc(100vh - 280px)}
+table{width:max-content;min-width:100%;border-collapse:collapse;font-size:11px}
+thead th{position:sticky;top:0;z-index:11;background:var(--surf2)}
+th{background:var(--surf2);padding:6px 8px;text-align:left;font-size:9.5px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);border-bottom:1px solid var(--brd);white-space:nowrap;user-select:none;transition:color .1s}
+th.sortable{cursor:pointer} th.sortable:hover{color:var(--txt)}
+th.asc::after{content:' ↑';color:var(--acc)} th.desc::after{content:' ↓';color:var(--acc)}
+td{padding:5px 8px;border-bottom:1px solid var(--brd);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+.tr-remove td{opacity:.5} .tr-remove:hover td{opacity:1}
+.hl-p td{background:rgba(200,240,96,.07)!important}
+.hl-b td{background:rgba(96,212,240,.06)!important}
+.hl-g td{background:rgba(255,255,255,.025)!important}
+.hl-l td{background:rgba(240,184,96,.06)!important}
+.hl-r td,.hl-sf td{background:rgba(240,96,96,.06)!important;opacity:.6}
+.hl-r:hover td,.hl-sf:hover td{opacity:1}
+.mc{font-family:var(--mono);font-size:9.5px;color:var(--mut);white-space:nowrap}
+.mc-name{display:block;font-family:var(--sans);font-size:9px;color:var(--mut);opacity:.65;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
+.nr{text-align:right}
+.cr{color:var(--red)!important} .ca{color:var(--amb)!important} .cg{color:var(--grn)!important} .cm{color:var(--mut)!important}
+.badge{display:inline-flex;align-items:center;font-size:9px;font-weight:600;font-family:var(--disp);padding:2px 7px;border-radius:100px;white-space:nowrap;letter-spacing:.03em}
+.bg-p{background:rgba(200,240,96,.12);color:var(--acc);border:1px solid rgba(200,240,96,.22)}
+.bg-b{background:rgba(96,212,240,.1);color:var(--acc2);border:1px solid rgba(96,212,240,.2)}
+.bg-g{background:rgba(255,255,255,.05);color:var(--mut);border:1px solid var(--brd)}
+.bg-l{background:rgba(240,184,96,.1);color:var(--amb);border:1px solid rgba(240,184,96,.22)}
+.bg-r{background:rgba(240,96,96,.1);color:var(--red);border:1px solid rgba(240,96,96,.2)}
+.bg-sf{background:rgba(176,96,240,.12);color:#c060f0;border:1px solid rgba(176,96,240,.25)}
+.sw{display:flex;align-items:center;gap:6px;justify-content:flex-end;cursor:default}
+.sb{height:3px;border-radius:2px;flex-shrink:0}
+.sn{font-family:var(--mono);font-size:11px;min-width:26px;text-align:right}
+#score-tooltip{display:none;position:fixed;z-index:9999;background:var(--surf2);border:1px solid var(--brd2);border-radius:10px;padding:10px 14px;font-size:11px;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.5);min-width:200px}
+#score-tooltip .tt-title{font-family:var(--disp);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin-bottom:8px}
+#score-tooltip .tt-row{display:flex;justify-content:space-between;gap:16px;margin-bottom:4px;font-size:11px}
+#score-tooltip .tt-row:last-child{margin-bottom:0;border-top:1px solid var(--brd);padding-top:6px;margin-top:4px;font-weight:600}
+#score-tooltip .tt-label{color:var(--mut)}
+#score-tooltip .tt-val{font-family:var(--mono);color:var(--txt)}
+.summary-section{display:none}
+.summary-section.visible{display:block}
+.print-section-title{display:none}
+.sum-wrap{border-radius:12px;border:1px solid var(--brd)}
+.sum-scroll{overflow:auto;max-height:calc(100vh - 280px)}
+.sum-table{width:max-content;min-width:100%;border-collapse:collapse;font-size:11px}
+.sum-table thead th{position:sticky;top:0;z-index:11;background:var(--surf2);padding:6px 8px;text-align:left;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);border-bottom:1px solid var(--brd);white-space:nowrap;cursor:pointer;user-select:none;transition:color .1s}
+.sum-table thead th:hover{color:var(--txt)}
+.sum-table thead th.asc::after{content:' ↑';color:var(--acc)} .sum-table thead th.desc::after{content:' ↓';color:var(--acc)}
+.sum-table td{padding:5px 8px;border-bottom:1px solid var(--brd);vertical-align:middle}
+.sum-table tr:last-child td{border-bottom:none}
+.sum-table tr:hover td{background:rgba(255,255,255,.02)}
+.error-box{background:rgba(240,96,96,.08);border:1px solid rgba(240,96,96,.2);border-radius:10px;padding:14px 18px;margin-bottom:14px;font-size:13px;color:var(--red);display:none}
+#pdf-kat-container{display:none}
+.weight-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.weight-row label{font-size:13px;color:var(--txt);flex:1}
+.weight-input-wrap{display:flex;align-items:center;gap:6px}
+.weight-input-wrap input[type=number]{width:64px;padding:6px 10px;font-size:13px;font-family:var(--mono);background:var(--surf2);border:1px solid var(--brd2);border-radius:8px;color:var(--txt);outline:none;text-align:right;transition:border-color .15s}
+.weight-input-wrap input[type=number]:focus{border-color:var(--acc)}
+.weight-input-wrap input[type=number].err{border-color:var(--red)}
+.weight-pct{font-size:13px;color:var(--mut);font-family:var(--mono)}
+</style>
+</head>
+<body>
+
+<div id="upload-screen">
+  <div class="logo">Bruttovinst Analyzer</div>
+  <h1 class="upload-title">Analysera din<br><span>försäljning</span></h1>
+  <p class="upload-sub">Importera din Bruttovinst Artikel-rapport och få direkt insikt i vilka produkter som ska prioriteras, ses över eller plockas bort.</p>
+  <div class="drop-zone" id="drop-zone">
+    <input type="file" id="file-input" accept=".xlsx,.xls">
+    <div class="drop-icon">📊</div>
+    <div class="drop-label">Välj eller dra hit din fil</div>
+    <div class="drop-hint">Klicka för att öppna filväljaren</div>
+  </div>
+  <div class="format-note">Stödjer <span>.xlsx</span> och <span>.xls</span> · Bruttovinst Artikel-format</div>
+  <div class="error-box" id="upload-error"></div>
+</div>
+
+<div id="loading-screen">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">Läser in fil...</div>
+</div>
+
+<div id="dashboard">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-logo">Bruttovinst Analyzer</div>
+      <div class="topbar-file" id="file-name-disp"></div>
+      <div class="topbar-period" id="period-disp"></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn-new btn-hl" id="hl-btn" onclick="toggleHighlight()">◐ Highlight</button>
+      <button class="btn-new" onclick="exportExcel()">↓ Excel</button>
+      <button class="btn-new" onclick="exportPDF()">↓ PDF</button>
+      <button class="btn-new" onclick="resetApp()">+ Ny fil</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="error-box" id="dash-error"></div>
+    <div class="metrics-grid" id="metrics-grid"></div>
+
+    <div class="legend">
+      <span style="font-family:var(--disp);font-size:11px;font-weight:600;color:var(--txt)">Poängmodell:</span>
+      <span>Volym 40%</span><span>·</span><span>Marginal kr 20%</span><span>·</span><span>Marginal % 15%</span><span>·</span><span>Svinnstraff 10%</span><span>·</span><span>Bruttovinst 15%</span>
+      <span style="color:var(--brd2)">|</span>
+      <span style="cursor:pointer;color:var(--acc2)" onclick="setView('weights')" title="Klicka för att ändra vikter">⚙ Ändra vikter</span>
+      <span style="color:var(--brd2)">|</span>
+      <span title="Rangordnas relativt inom KAT. Topp 10% = Prioritet, 11–40% = Bra, 41–80% = Genomsnittlig, botten 20% = Låg">Rangordning inom KAT</span>
+      <span style="color:var(--brd2)">|</span>
+      <span><span class="legend-dot" style="background:var(--acc)"></span>Prioritet (topp 10%)</span>
+      <span><span class="legend-dot" style="background:var(--acc2)"></span>Bra (11–40%)</span>
+      <span><span class="legend-dot" style="background:#888"></span>Genomsnittlig (41–80%)</span>
+      <span><span class="legend-dot" style="background:var(--amb)"></span>Låg (botten 20%)</span>
+      <span><span class="legend-dot" style="background:var(--red)"></span>Ta bort</span>
+      <span><span class="legend-dot" style="background:var(--red)"></span>Systemfel (0 sålda)</span>
+      <span><span class="legend-dot" style="background:var(--red)"></span>Ignorerad (KAT 248 / 276 / 334 / 335 / 337 / 338)</span>
+      <span><span class="legend-dot" style="background:var(--red)"></span>Tobak (KAT 344 / 345)</span>
+      <span><span class="legend-dot" style="background:var(--red)"></span>Kategoriförsäljning (BNR = KAT)</span>
+      <span><span class="legend-dot" style="background:var(--red)"></span>Marg 99% (systemdata)</span>
+    </div>
+
+    <div class="view-tabs">
+      <button class="view-tab active" onclick="setView('products')">Produkter</button>
+      <button class="view-tab" onclick="setView('vom')">Sammanfattning per VOM</button>
+      <button class="view-tab" onclick="setView('kat')">Sammanfattning per KAT</button>
+      <button class="view-tab" onclick="setView('movers')">Top / Bottom</button>
+      <button class="view-tab" onclick="setView('svinn')">Svinn watchlist</button>
+      <button class="view-tab" onclick="setView('katcomp')">KAT jämförelse</button>
+    </div>
+
+    <!-- Movers view -->
+    <div id="view-movers" class="summary-section">
+
+      <!-- Threshold controls -->
+      <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;background:var(--surf);border:1px solid var(--brd);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:12px">
+        <span style="font-family:var(--disp);font-size:12px;font-weight:600;color:var(--txt)">Tröskelvärden</span>
+        <label style="display:flex;align-items:center;gap:6px;color:var(--mut)">Min antal sålda
+          <input type="number" id="mv-min" value="10" min="1" style="width:60px;padding:4px 7px;font-size:11px;font-family:var(--mono);background:var(--surf2);border:1px solid var(--brd2);border-radius:6px;color:var(--txt);outline:none" oninput="buildMovers()">
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;color:var(--mut)">Max antal för Dolda pärlor
+          <input type="number" id="mv-gem-max" value="50" min="1" style="width:70px;padding:4px 7px;font-size:11px;font-family:var(--mono);background:var(--surf2);border:1px solid var(--brd2);border-radius:6px;color:var(--txt);outline:none" oninput="buildMovers()">
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;color:var(--mut)">Min marg % för Dolda pärlor
+          <input type="number" id="mv-gem-marg" value="32" min="1" style="width:55px;padding:4px 7px;font-size:11px;font-family:var(--mono);background:var(--surf2);border:1px solid var(--brd2);border-radius:6px;color:var(--txt);outline:none" oninput="buildMovers()">
+          <span style="color:var(--mut)">%</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;color:var(--mut)">Max marg % för Potential
+          <input type="number" id="mv-pot-marg" value="30" min="1" style="width:55px;padding:4px 7px;font-size:11px;font-family:var(--mono);background:var(--surf2);border:1px solid var(--brd2);border-radius:6px;color:var(--txt);outline:none" oninput="buildMovers()">
+          <span style="color:var(--mut)">%</span>
+        </label>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+        <div>
+          <div style="font-family:var(--disp);font-size:13px;font-weight:700;margin-bottom:4px;color:var(--acc)">↑ Potential — hög volym, låg marginal</div>
+          <div style="font-size:11px;color:var(--mut);margin-bottom:12px">Säljer bra men tjänar dåligt — se över inköpspris eller försäljningspris</div>
+          <div class="table-wrap"><div class="table-scroll" style="max-height:360px">
+            <table><thead><tr>
+              <th>KAT</th><th>Produkt</th>
+              <th style="text-align:right">Antal</th>
+              <th style="text-align:right">Marg %</th>
+              <th style="text-align:right">BV kr</th>
+              <th style="text-align:right">Poäng</th>
+            </tr></thead><tbody id="movers-top-body"></tbody></table>
+          </div></div>
+        </div>
+
+        <div>
+          <div style="font-family:var(--disp);font-size:13px;font-weight:700;margin-bottom:4px;color:var(--acc2)">★ Dolda pärlor — hög marginal, låg volym</div>
+          <div style="font-size:11px;color:var(--mut);margin-bottom:12px">Tjänar bra men säljer lite — kan gynnas av bättre hyllplacering</div>
+          <div class="table-wrap"><div class="table-scroll" style="max-height:360px">
+            <table><thead><tr>
+              <th>KAT</th><th>Produkt</th>
+              <th style="text-align:right">Antal</th>
+              <th style="text-align:right">Marg %</th>
+              <th style="text-align:right">BV kr</th>
+              <th style="text-align:right">Poäng</th>
+            </tr></thead><tbody id="movers-hidden-body"></tbody></table>
+          </div></div>
+        </div>
+
+      </div>
+
+      <div style="margin-top:20px">
+        <div style="font-family:var(--disp);font-size:13px;font-weight:700;margin-bottom:4px;color:var(--red)">↓ Låg poäng — kandidater för bortplockning</div>
+        <div style="font-size:11px;color:var(--mut);margin-bottom:12px">Nivå Låg eller Genomsnittlig — säljer lite och tjänar lite</div>
+        <div class="table-wrap"><div class="table-scroll" style="max-height:280px">
+          <table><thead><tr>
+            <th>KAT</th><th>BNR</th><th>EAN/PLU</th><th>Produkt</th>
+            <th style="text-align:right">Antal</th>
+            <th style="text-align:right">Marg %</th>
+            <th style="text-align:right">FYS %</th>
+            <th style="text-align:right">BV kr</th>
+            <th style="text-align:right">Poäng</th>
+            <th>Nivå</th>
+          </tr></thead><tbody id="movers-bottom-body"></tbody></table>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- Svinn watchlist -->
+    <div id="view-svinn" class="summary-section">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap">
+        <span style="font-size:11px;color:var(--mut)">Visa produkter med FYS %</span>
+        <span style="font-size:11px;color:var(--mut)">≥</span>
+        <input type="number" id="svinn-threshold" value="2" min="0" step="0.5" style="width:60px;padding:4px 8px;font-size:11px;font-family:var(--mono);background:var(--surf2);border:1px solid var(--brd2);border-radius:6px;color:var(--txt);outline:none" oninput="buildSvinn()">
+        <span style="font-size:11px;color:var(--mut)">% — sorterade efter FYS kr (högst först)</span>
+      </div>
+      <div class="table-wrap"><div class="table-scroll">
+        <table id="svinn-table"><thead><tr>
+          <th>VOM</th><th>KAT</th><th>BNR</th><th>Produkt</th>
+          <th class="sortable nr" onclick="sortSvinn('antal')">Antal</th>
+          <th class="sortable nr" onclick="sortSvinn('forsv')">Förs.värde</th>
+          <th class="sortable nr" onclick="sortSvinn('ff')" id="svinn-th-ff">FYS kr</th>
+          <th class="sortable nr" onclick="sortSvinn('ffpct')" id="svinn-th-ffpct">FYS %</th>
+          <th class="sortable nr" onclick="sortSvinn('marg')">Marg kr</th>
+          <th class="sortable nr" onclick="sortSvinn('margpct')">Marg %</th>
+          <th class="sortable nr" onclick="sortSvinn('bv')">BV kr</th>
+          <th>Nivå</th>
+        </tr></thead><tbody id="svinn-body"></tbody></table>
+      </div></div>
+    </div>
+
+    <!-- KAT comparison -->
+    <div id="view-katcomp" class="summary-section">
+      <div style="font-size:11px;color:var(--mut);margin-bottom:12px">Varje produkt jämförs med snittet för sin KAT-grupp. Grön = över snitt, röd = under snitt.</div>
+      <div class="toolbar" style="margin-bottom:12px">
+        <div class="multi-drop" id="katcomp-drop">
+          <button class="multi-btn" onclick="toggleDrop('katcomp-drop')" style="min-width:280px">
+            <span id="katcomp-label">Välj KAT...</span><span class="drop-arrow">▾</span>
+          </button>
+          <div class="multi-menu" id="katcomp-menu" style="min-width:320px"></div>
+        </div>
+      </div>
+      <div class="table-wrap"><div class="table-scroll">
+        <table><thead><tr>
+          <th>BNR</th><th>Produkt</th>
+          <th style="text-align:right">Antal</th>
+          <th style="text-align:right">vs snitt</th>
+          <th style="text-align:right">Marg %</th>
+          <th style="text-align:right">vs snitt</th>
+          <th style="text-align:right">FYS %</th>
+          <th style="text-align:right">vs snitt</th>
+          <th style="text-align:right">BV kr</th>
+          <th style="text-align:right">vs snitt</th>
+          <th>Nivå</th>
+        </tr></thead><tbody id="katcomp-body"></tbody></table>
+      </div></div>
+    </div>
+
+    <!-- Weights panel -->
+    <div id="view-weights" class="summary-section">
+      <div style="background:var(--surf);border:1px solid var(--brd);border-radius:12px;padding:20px 24px;max-width:560px">
+        <div style="font-family:var(--disp);font-size:14px;font-weight:700;margin-bottom:4px">Poängvikter</div>
+        <div style="font-size:12px;color:var(--mut);margin-bottom:20px">Vikterna måste summera till 100%. Ändringarna slår igenom direkt.</div>
+        <div id="weights-error" style="display:none;color:var(--red);font-size:12px;margin-bottom:12px"></div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="weight-row"><label>Volym (Antal sålda)</label><div class="weight-input-wrap"><input type="number" id="w-vol" min="0" max="100" value="40" oninput="updateWeights()"><span class="weight-pct">%</span></div></div>
+          <div class="weight-row"><label>Marginal kr</label><div class="weight-input-wrap"><input type="number" id="w-marg" min="0" max="100" value="20" oninput="updateWeights()"><span class="weight-pct">%</span></div></div>
+          <div class="weight-row"><label>Marginal %</label><div class="weight-input-wrap"><input type="number" id="w-margpct" min="0" max="100" value="15" oninput="updateWeights()"><span class="weight-pct">%</span></div></div>
+          <div class="weight-row"><label>Svinnstraff</label><div class="weight-input-wrap"><input type="number" id="w-svinn" min="0" max="100" value="10" oninput="updateWeights()"><span class="weight-pct">%</span></div></div>
+          <div class="weight-row"><label>Bruttovinst</label><div class="weight-input-wrap"><input type="number" id="w-bv" min="0" max="100" value="15" oninput="updateWeights()"><span class="weight-pct">%</span></div></div>
+        </div>
+        <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--brd);display:flex;align-items:center;gap:12px">
+          <span style="font-size:12px;color:var(--mut)">Summa: <strong id="weights-sum" style="color:var(--txt)">100%</strong></span>
+          <button class="btn-new" onclick="resetWeights()" style="font-size:11px;padding:5px 12px">Återställ standard</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Products view -->
+    <div id="view-products">
+      <div class="print-section-title" id="prod-print-title">Produktlista</div>
+      <div class="tabs" id="tier-tabs"></div>
+      <div class="toolbar">
+        <input class="search-input" type="text" id="search" placeholder="Sök produkt, EAN, BNR...">
+        <select class="filter-select" id="sort-sel" onchange="renderTable()">
+          <option value="score|desc">Poäng ↓</option>
+          <option value="score|asc">Poäng ↑</option>
+          <option value="antal|desc">Antal ↓</option>
+          <option value="antal|asc">Antal ↑</option>
+          <option value="forsv|desc">Förs.värde ↓</option>
+          <option value="forsv|asc">Förs.värde ↑</option>
+          <option value="marg|desc">Marginal kr ↓</option>
+          <option value="marg|asc">Marginal kr ↑</option>
+          <option value="margpct|desc">Marg % ↓</option>
+          <option value="margpct|asc">Marg % ↑</option>
+          <option value="ff|desc">FYS ↓</option>
+          <option value="ff|asc">FYS ↑</option>
+          <option value="ffpct|desc">FYS % ↓</option>
+          <option value="ffpct|asc">FYS % ↑</option>
+          <option value="bv|desc">Bruttovinst ↓</option>
+          <option value="bv|asc">Bruttovinst ↑</option>
+          <option value="bvpct|desc">BV % ↓</option>
+          <option value="bvpct|asc">BV % ↑</option>
+          <option value="ben|asc">Produkt A → Ö</option>
+          <option value="ben|desc">Produkt Ö → A</option>
+        </select>
+        <div class="multi-drop" id="vom-drop">
+          <button class="multi-btn" onclick="toggleDrop('vom-drop')">
+            <span id="vom-label">Alla VOM</span><span class="drop-arrow">▾</span>
+          </button>
+          <div class="multi-menu" id="vom-menu"></div>
+        </div>
+        <div class="multi-drop" id="kat-drop">
+          <button class="multi-btn" onclick="toggleDrop('kat-drop')">
+            <span id="kat-label">Alla KAT</span><span class="drop-arrow">▾</span>
+          </button>
+          <div class="multi-menu" id="kat-menu"></div>
+        </div>
+        <span class="row-count" id="row-count"></span>
+      </div>
+      <div class="table-wrap">
+        <div class="table-scroll" id="prod-scroll">
+          <table>
+            <thead>
+              <tr id="col-row">
+                <th class="sortable" data-field="vom" onclick="sortCol(this)">VOM</th>
+                <th class="sortable" data-field="kat" onclick="sortCol(this)">KAT</th>
+                <th class="sortable" data-field="ean" onclick="sortCol(this)">EAN/PLU</th>
+                <th class="sortable" data-field="bnr" onclick="sortCol(this)">BNR</th>
+                <th class="sortable" data-field="ben" onclick="sortCol(this)">Produkt</th>
+                <th class="sortable" data-field="vara" onclick="sortCol(this)">Producent</th>
+                <th class="sortable nr" data-field="antal" onclick="sortCol(this)">Antal</th>
+                <th class="sortable nr" data-field="forsv" onclick="sortCol(this)">Förs.värde kr</th>
+                <th class="sortable nr" data-field="marg" onclick="sortCol(this)">Marginal kr</th>
+                <th class="sortable nr" data-field="margpct" onclick="sortCol(this)">Marg %</th>
+                <th class="sortable nr" data-field="ff" onclick="sortCol(this)">FYS</th>
+                <th class="sortable nr" data-field="ffpct" onclick="sortCol(this)">FYS %</th>
+                <th class="sortable nr" data-field="bv" onclick="sortCol(this)">Bruttovinst</th>
+                <th class="sortable nr" data-field="bvpct" onclick="sortCol(this)">BV %</th>
+                <th>Nivå</th>
+                <th class="sortable nr" data-field="score" onclick="sortCol(this)">Poäng</th>
+              </tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VOM summary -->
+    <div id="view-vom" class="summary-section">
+      <div class="print-section-title" id="vom-print-title">Sammanfattning per VOM</div>
+      <div class="sum-wrap">
+        <div class="sum-scroll">
+          <table class="sum-table">
+            <thead><tr>
+              <th onclick="sortSum('vom-body',this,'grpKey')">VOM – Namn</th>
+              <th onclick="sortSum('vom-body',this,'prods')" style="text-align:right">Produkter</th>
+              <th onclick="sortSum('vom-body',this,'antal')" style="text-align:right">Ant. sålda</th>
+              <th onclick="sortSum('vom-body',this,'forsv')" style="text-align:right">Förs.värde kr</th>
+              <th onclick="sortSum('vom-body',this,'marg')" style="text-align:right">Marginal kr</th>
+              <th onclick="sortSum('vom-body',this,'avgMargPct')" style="text-align:right">Snitt marg %</th>
+              <th onclick="sortSum('vom-body',this,'ff')" style="text-align:right">FYS kr</th>
+              <th onclick="sortSum('vom-body',this,'avgSvinnPct')" style="text-align:right">FYS %</th>
+              <th onclick="sortSum('vom-body',this,'bv')" style="text-align:right">Bruttovinst</th>
+              <th onclick="sortSum('vom-body',this,'avgBvPct')" style="text-align:right">BV %</th>
+              <th onclick="sortSum('vom-body',this,'prio')" style="text-align:right">Prioritet</th>
+              <th onclick="sortSum('vom-body',this,'tabort')" style="text-align:right">Ta bort</th>
+            </tr></thead>
+            <tbody id="vom-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- KAT summary -->
+    <div id="view-kat" class="summary-section">
+      <div class="print-section-title" id="kat-print-title">Sammanfattning per KAT</div>
+      <div class="sum-wrap">
+        <div class="sum-scroll">
+          <table class="sum-table">
+            <thead><tr>
+              <th onclick="sortSum('kat-body',this,'grpKey')">KAT – Namn</th>
+              <th onclick="sortSum('kat-body',this,'prods')" style="text-align:right">Produkter</th>
+              <th onclick="sortSum('kat-body',this,'antal')" style="text-align:right">Ant. sålda</th>
+              <th onclick="sortSum('kat-body',this,'forsv')" style="text-align:right">Förs.värde kr</th>
+              <th onclick="sortSum('kat-body',this,'marg')" style="text-align:right">Marginal kr</th>
+              <th onclick="sortSum('kat-body',this,'avgMargPct')" style="text-align:right">Snitt marg %</th>
+              <th onclick="sortSum('kat-body',this,'ff')" style="text-align:right">FYS kr</th>
+              <th onclick="sortSum('kat-body',this,'avgSvinnPct')" style="text-align:right">FYS %</th>
+              <th onclick="sortSum('kat-body',this,'bv')" style="text-align:right">Bruttovinst</th>
+              <th onclick="sortSum('kat-body',this,'avgBvPct')" style="text-align:right">BV %</th>
+              <th onclick="sortSum('kat-body',this,'prio')" style="text-align:right">Prioritet</th>
+              <th onclick="sortSum('kat-body',this,'tabort')" style="text-align:right">Ta bort</th>
+            </tr></thead>
+            <tbody id="kat-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="score-tooltip">
+  <div class="tt-title">Poängfördelning</div>
+  <div class="tt-row"><span class="tt-label">Volym (40%)</span><span class="tt-val" id="tt-vol">–</span></div>
+  <div class="tt-row"><span class="tt-label">Marginal kr (20%)</span><span class="tt-val" id="tt-marg">–</span></div>
+  <div class="tt-row"><span class="tt-label">Marginal % (15%)</span><span class="tt-val" id="tt-margpct">–</span></div>
+  <div class="tt-row"><span class="tt-label">Svinnstraff (10%)</span><span class="tt-val" id="tt-svinn">–</span></div>
+  <div class="tt-row"><span class="tt-label">Bruttovinst (15%)</span><span class="tt-val" id="tt-bv">–</span></div>
+  <div class="tt-row"><span class="tt-label">Totalt</span><span class="tt-val" id="tt-total">–</span></div>
+</div>
+
+<script>
+var allProducts=[],svinnSort={field:'ff',dir:'desc'},activeTier='all',sortField='score',sortDir='desc',fileName='',highlightMode=false,currentView='products';
+var sumSortState={};
+var TIER_ORDER={Prioritet:0,Bra:1,Genomsnittlig:2,'Låg':3,'Ta bort':4,Systemfel:5,Ignorerad:6,'Marg 99%':7,Kategoriförsäljning:8,Tobak:9};
+var TIER_BADGE={Prioritet:'bg-p',Bra:'bg-b',Genomsnittlig:'bg-g','Låg':'bg-l','Ta bort':'bg-r',Systemfel:'bg-r',Ignorerad:'bg-r','Marg 99%':'bg-r',Kategoriförsäljning:'bg-r',Tobak:'bg-r'};
+var TIER_PILL={Prioritet:'tp-p',Bra:'tp-b',Genomsnittlig:'tp-g','Låg':'tp-l','Ta bort':'tp-r',Systemfel:'tp-r',Ignorerad:'tp-r','Marg 99%':'tp-r',Kategoriförsäljning:'tp-r',Tobak:'tp-r'};
+var TIER_HL={Prioritet:'hl-p',Bra:'hl-b',Genomsnittlig:'hl-g','Låg':'hl-l','Ta bort':'hl-r',Systemfel:'hl-r',Ignorerad:'hl-r','Marg 99%':'hl-r',Kategoriförsäljning:'hl-r',Tobak:'hl-r'};
+var BAR_COLOR={Prioritet:'#c8f060',Bra:'#60d4f0',Genomsnittlig:'#888780','Låg':'#f0b860','Ta bort':'#f06060',Systemfel:'#f06060',Ignorerad:'#f06060','Marg 99%':'#f06060',Kategoriförsäljning:'#f06060',Tobak:'#f06060'};
+
+var VOM_NAMES={"1101":"Frukt & Grönt","1102":"Blommor","1201":"Bröd","1202":"Mejeri","1301":"Chark","1302":"Kött","1303":"Fisk","1401":"Middagstillbehör","1402":"Drycker & Snacks","1403":"Frukost, Efterrätter & Bak","1404":"Frysen","1405":"Hygien & Hälsa","1406":"Godis","1407":"Husdjur","1408":"Städa","1409":"Tobak & porto","1410":"Barnmat & Blöjor","1501":"Tidningar","1503":"Leksaker","1505":"Hemmet","1506":"Köket","1508":"Aktiv Fritid","1510":"Skriv, kontor & böcker","1513":"Trädgård"};
+var KAT_NAMES={"208":"KYLD FISK&SKALDJURSKONSERV","209":"SMÅMÅL MEJERI","210":"VEGETABILISK MEJERI","211":"GRÖNSAKSKONSERVER","212":"BARNMAT","213":"BAKNING","214":"KAFFE, TE & CHOKLAD","215":"FÄRSK FISK&SKALDJUR KFP","216":"OKYLD JUICE & FRUKTDRYCK","218":"FRUKTDRYCKER","219":"MATFETT","220":"ÄGG","221":"FRYST FISK & SKALDJUR","222":"MEJERI","223":"ÖL, VIN OCH CIDER","224":"GODIS","225":"MJUKT MATBRÖD PACKAT","226":"OST (KONSUMENTPACK)","227":"GLASS","228":"LÖSVIKTSGODIS","229":"HÅRT BRÖD & MATKEX","230":"GRÖNSAKER","231":"FRUKT & BÄR","233":"MATCHARK (KONSUMENTPACK)","234":"FÄRDIGMAT (KONSUMENTPACK)","236":"FIKABRÖD","237":"FÄRSK FÅGEL","238":"MANUELL CHARK","239":"FÄRDIGMAT & FISKKONSERVER","240":"FLINGOR & GRYN","241":"PASTA & SÅS","242":"KRYDDOR","243":"HÄLSA","244":"SNACKS","247":"UTLÄNDSKA MATKONCEPT","248":"PANT FÖRSÄLJNING","249":"LÄSK OCH SAFT","250":"MATÖVERKÄNSLIGHET","252":"BUTIKSBAKAT BRÖD","253":"OST (MANUELL)","254":"OLJA VINÄGER","255":"SMAKSÄTTNING","256":"SYLT MOS MARMELAD","257":"MELLANMÅL & EFTERRÄTTER","258":"FÄRSKT KÖTT (KONSUMENTPACK)","259":"FUNKTIONSDRYCKER","261":"TILLBEHÖRSSALLADER","262":"PÅLÄGGSCHARK (KONSUMENTPACK)","264":"DELI (KONSUMENTPACK)","265":"FRYST FÄRDIGLAGAT","266":"FRYST GRÖNSAKER&POTATIS","267":"FRYST FRUKT, BÄR&DESSERT","268":"FRYST FÅGEL","269":"VATTEN","270":"BUTIKSGRILLAT MANUELLT","275":"FÄRSKA VEG PROTEINER","276":"PANT INLÖSEN","311":"GASTRONOMI","314":"HELG & FEST","315":"FÖRVARING TVÄTT & STRY","319":"TVÄTT- & SKÖLJMEDEL","320":"BARNTILLBEHÖR","321":"RENGÖRING","322":"KROPPSVÅRD","323":"TISSUE PAPPER","325":"DJURMAT & TILLBEHÖR","326":"MATEMBALLAGE","327":"ANSIKTSVÅRD","328":"MUNVÅRD MUNHYGIEN","329":"HÅRVÅRD","330":"INTIMHYGIEN","331":"LJUS","332":"SKRIV & KONTOR","334":"TIDSKRIFTER","335":"DAGSTIDNINGAR","336":"LÄKEMEDEL RECEPTFRIA","337":"GRATTISKORT & PRESENTPAPPER","338":"BÄRKASSAR","341":"LEKSAKER","344":"CIGARETTER","345":"SNUS","351":"HÅRBORTTAGNING","352":"PORTO/FÖRKÖPSHÄFTEN","355":"SERVETTER&ENG.MATERIAL","356":"BATTERIER&SÄKRINGAR","357":"TELEKONTANTKORT","358":"UPPLEVELSER&PRESENTKORT","464":"CYKLAR","513":"HOBBY SY & STICKA","533":"LJUSKÄLLOR","550":"BEKÄMPNING & REDSKAP","553":"JORD, GÖDNING & VED","559":"GRILLAR","560":"SOMMARPLANTOR","561":"TRÄDGÅRDSVÄXTER","562":"BLOMMOR","566":"KRUKOR","232":"FÄRSKT KÖTT BUTIKSPACKAT","245":"NATURGODIS LÖSVIKT"};
+function vomLabel(id){return id+(VOM_NAMES[id]?' – '+VOM_NAMES[id]:'')}
+function katLabel(id){return id+(KAT_NAMES[id]?' – '+KAT_NAMES[id]:'')}
+
+var dz=document.getElementById('drop-zone'),fi=document.getElementById('file-input');
+dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('drag-over')});
+dz.addEventListener('dragleave',function(){dz.classList.remove('drag-over')});
+dz.addEventListener('drop',function(e){e.preventDefault();dz.classList.remove('drag-over');if(e.dataTransfer.files[0])handleFile(e.dataTransfer.files[0])});
+fi.addEventListener('change',function(e){if(e.target.files[0])handleFile(e.target.files[0])});
+
+function showErr(m,d){var el=document.getElementById(d?'dash-error':'upload-error');el.textContent=m;el.style.display='block'}
+function clearErr(d){document.getElementById(d?'dash-error':'upload-error').style.display='none'}
+function setLoading(m){document.getElementById('upload-screen').style.display='none';document.getElementById('dashboard').style.display='none';document.getElementById('loading-screen').style.display='flex';document.getElementById('loading-text').textContent=m||'Läser in fil...'}
+
+function handleFile(file){
+  fileName=file.name;clearErr(false);setLoading('Läser in fil...');
+  var r=new FileReader();
+  r.onload=function(e){
+    setTimeout(function(){
+      try{
+        document.getElementById('loading-text').textContent='Analyserar data...';
+        var wb=XLSX.read(e.target.result,{type:'array'});
+        var ws=wb.Sheets[wb.SheetNames[0]];
+        processData(XLSX.utils.sheet_to_json(ws,{header:1,defval:''}));
+      }catch(err){showDash();showErr('Kunde inte tolka filen: '+err.message,true)}
+    },80);
+  };
+  r.onerror=function(){document.getElementById('loading-screen').style.display='none';document.getElementById('upload-screen').style.display='flex';showErr('Fel vid inläsning.',false)};
+  r.readAsArrayBuffer(file);
+}
+
+function processData(rows){
+  var period='';
+  for(var i=0;i<Math.min(rows.length,8);i++){
+    var c=String(rows[i][0]||'');
+    if(c.includes('Från Datum')){var m=c.match(/(\d{4}-\d{2}-\d{2})\s+Till Datum:\s+(\d{4}-\d{2}-\d{2})/);if(m)period=m[1]+' → '+m[2];break}
+  }
+  var hi=-1;
+  for(var i=0;i<Math.min(rows.length,30);i++){
+    var r=rows[i].map(function(v){return String(v).toLowerCase().trim()});
+    if(r.includes('vom')&&r.some(function(v){return v.includes('ean')||v.includes('plu')})&&r.includes('antal')){hi=i;break}
+  }
+  if(hi===-1){showDash();showErr('Hittade inte kolumnrubriker.',true);return}
+
+  var hdrs=rows[hi].map(function(h){return String(h).trim().toLowerCase()});
+  function ci(){
+    for(var a=0;a<arguments.length;a++){
+      var n=arguments[a],idx=hdrs.indexOf(n);
+      if(idx!==-1)return idx;
+      idx=hdrs.findIndex(function(h){return h.includes(n)});
+      if(idx!==-1)return idx;
+    }
+    return -1;
+  }
+  var C={
+    vom:ci('vom')!==-1?ci('vom'):0, kat:ci('kat')!==-1?ci('kat'):1,
+    ean:ci('ean/plu')!==-1?ci('ean/plu'):2, bnr:ci('bnr')!==-1?ci('bnr'):3,
+    ben:ci('ben')!==-1?ci('ben'):4, vara:ci('varutext')!==-1?ci('varutext'):5,
+    antal:ci('antal')!==-1?ci('antal'):6,
+    forsv:hdrs.indexOf('förs. värde')!==-1?hdrs.indexOf('förs. värde'):8,
+    marg:ci('marg. kr')!==-1?ci('marg. kr'):13,
+    margpct:hdrs.indexOf('marg. %')!==-1?hdrs.indexOf('marg. %'):15,
+    ff:hdrs.indexOf('ff kr')!==-1?hdrs.indexOf('ff kr'):20,
+    ffpct:hdrs.indexOf('ff %')!==-1?hdrs.indexOf('ff %'):22,
+    bv:hdrs.indexOf('bruttovinst')!==-1?hdrs.indexOf('bruttovinst'):24,
+    bvpct:hdrs.indexOf('bv %')!==-1?hdrs.indexOf('bv %'):26
+  };
+
+  function tn(v){var n=parseFloat(String(v).replace(',','.'));return isNaN(n)?0:n}
+  function ts(v){return String(v==null?'':v).trim()}
+
+  var products=[];
+  rows.slice(hi+1).forEach(function(row){
+    if(!row||row.length<5)return;
+    var vom=row[C.vom];
+    if(!vom||isNaN(Number(vom))||Number(vom)===0)return;
+    var ean=ts(row[C.ean]);
+    if(ean&&!isNaN(+ean))ean=String(Math.round(+ean));
+    products.push({
+      vom:String(Math.round(+vom)),kat:ts(row[C.kat]),
+      ean:ean,bnr:ts(row[C.bnr]),ben:ts(row[C.ben]),vara:ts(row[C.vara]),
+      antal:tn(row[C.antal]),forsv:tn(row[C.forsv]),
+      marg:tn(row[C.marg]),margpct:tn(row[C.margpct]),
+      ff:tn(row[C.ff]),ffpct:tn(row[C.ffpct]),
+      bv:tn(row[C.bv]),bvpct:tn(row[C.bvpct])
+    });
+  });
+
+  if(!products.length){showDash();showErr('Inga produktrader hittades.',true);return}
+
+  var maxA=Math.max.apply(null,products.map(function(p){return p.antal}).concat([1]));
+  var maxM=Math.max.apply(null,products.map(function(p){return p.marg}).concat([1]));
+  var maxB=Math.max.apply(null,products.map(function(p){return p.bv}).concat([1]));
+
+  var scored=products.map(function(p){
+    if(p.bnr&&p.kat&&p.bnr.trim()===p.kat.trim())return Object.assign({},p,{score:0,tier:'Kategoriförsäljning'});
+    if(p.kat==='344'||p.kat==='345')return Object.assign({},p,{score:0,tier:'Tobak'});
+    if(p.kat==='248'||p.kat==='338'||p.kat==='337'||p.kat==='334'||p.kat==='335'||p.kat==='276')return Object.assign({},p,{score:0,tier:'Ignorerad'});
+    if(p.margpct>=99)return Object.assign({},p,{score:0,tier:'Marg 99%'});
+    if(p.antal===0||p.antal<0)return Object.assign({},p,{score:0,tier:'Systemfel'});
+    if(p.bv<0||p.marg<0)return Object.assign({},p,{score:0,tier:'Ta bort'});
+    var vS=(p.antal/maxA)*100, mS=(p.marg/maxM)*100;
+    var mpS=Math.min((p.margpct/60)*100,100), bS=(p.bv/maxB)*100;
+    var fr=p.forsv>0?p.ff/p.forsv:0, sS=Math.max(0,(1-fr)*100);
+    var W=getWeights();
+    var sc=Math.round(((vS*W.vol)+(mS*W.marg)+(mpS*W.margpct)+(sS*W.svinn)+(bS*W.bv))*10)/10;
+    var bd={vol:Math.round(vS*W.vol*10)/10,marg:Math.round(mS*W.marg*10)/10,margpct:Math.round(mpS*W.margpct*10)/10,svinn:Math.round(sS*W.svinn*10)/10,bv:Math.round(bS*W.bv*10)/10};
+    return Object.assign({},p,{score:sc,breakdown:bd,tier:'__pending'});
+  });
+
+  var katG={};
+  scored.forEach(function(p){
+    if(p.tier!=='__pending')return;
+    var k=p.kat||'__none';
+    if(!katG[k])katG[k]=[];
+    katG[k].push(p);
+  });
+  Object.keys(katG).forEach(function(k){
+    var g=katG[k];g.sort(function(a,b){return b.score-a.score});
+    var n=g.length;
+    g.forEach(function(p,i){var pct=(i+1)/n;p.tier=pct<=.10?'Prioritet':pct<=.40?'Bra':pct<=.80?'Genomsnittlig':'Låg'});
+  });
+  allProducts=scored;
+
+  var voms=[...new Set(allProducts.map(function(p){return p.vom}).filter(Boolean))].sort();
+  var kats=[...new Set(allProducts.map(function(p){return p.kat}).filter(Boolean))].sort();
+  buildMultiMenu('vom-menu','vom-label',voms,'Alla VOM');
+  buildMultiMenu('kat-menu','kat-label',kats,'Alla KAT');
+  document.getElementById('period-disp').textContent=period;
+
+  showDash();buildMetrics();buildTabs();renderTable();buildSummaries();
+  requestAnimationFrame(setTableHeight);
+}
+
+function showDash(){
+  document.getElementById('loading-screen').style.display='none';
+  document.getElementById('upload-screen').style.display='none';
+  document.getElementById('dashboard').style.display='block';
+  document.getElementById('file-name-disp').textContent=fileName;
+}
+
+function setTableHeight(){
+  ['prod-scroll','.sum-scroll'].forEach(function(sel){
+    var el=sel.startsWith('.')?document.querySelector(sel):document.getElementById(sel);
+    if(!el||el.getBoundingClientRect().top===0)return;
+    var top=el.getBoundingClientRect().top;
+    el.style.maxHeight=Math.max(200,window.innerHeight-top-16)+'px';
+  });
+  document.querySelectorAll('.sum-scroll').forEach(function(el){
+    var top=el.getBoundingClientRect().top;
+    if(top>0)el.style.maxHeight=Math.max(200,window.innerHeight-top-16)+'px';
+  });
+}
+window.addEventListener('resize',setTableHeight);
+
+function buildMetrics(){
+  var p=allProducts;
+  var totalA=p.reduce(function(s,x){return s+x.antal},0);
+  var totalForsv=p.reduce(function(s,x){return s+x.forsv},0);
+  var totalBv=p.reduce(function(s,x){return s+x.bv},0);
+  var totalFF=p.reduce(function(s,x){return s+x.ff},0);
+  var totalMarg=p.reduce(function(s,x){return s+x.marg},0);
+  var act=p.filter(function(x){return x.antal>0&&x.marg>0});
+  var avgBvP=totalForsv>0?totalBv/totalForsv*100:0;
+  var avgMargP=totalForsv>0?totalMarg/totalForsv*100:0;
+  var avgSvP=totalForsv>0?totalFF/totalForsv*100:0;
+  var prio=p.filter(function(x){return x.tier==='Prioritet'}).length;
+  var tb=p.filter(function(x){return x.tier==='Ta bort'||x.tier==='Ignorerad'||x.tier==='Systemfel'||x.tier==='Marg 99%'||x.tier==='Kategoriförsäljning'||x.tier==='Tobak'}).length;
+  document.getElementById('metrics-grid').innerHTML=
+    '<div class="metric"><div class="metric-label">Produkter</div><div class="metric-value">'+p.length+'</div><div class="metric-sub">i rapporten</div></div>'+
+    '<div class="metric"><div class="metric-label">Sålda enheter</div><div class="metric-value">'+totalA.toLocaleString('sv')+'</div><div class="metric-sub">perioden</div></div>'+
+    '<div class="metric m-blue"><div class="metric-label">Försäljningsvärde</div><div class="metric-value">'+Math.round(totalForsv).toLocaleString('sv')+'</div><div class="metric-sub">kr perioden</div></div>'+
+    '<div class="metric m-green"><div class="metric-label">Total marginal</div><div class="metric-value">'+Math.round(totalMarg).toLocaleString('sv')+'</div><div class="metric-sub">kr perioden</div></div>'+
+    '<div class="metric"><div class="metric-label">Marg %</div><div class="metric-value">'+avgMargP.toFixed(1)+'%</div><div class="metric-sub">marg/försäljning</div></div>'+
+    '<div class="metric '+(avgSvP>=2?'m-danger':'')+'"'+'><div class="metric-label">FYS %</div><div class="metric-value">'+avgSvP.toFixed(1)+'%</div><div class="metric-sub">av försäljning</div></div>'+
+    '<div class="metric '+(avgSvP>=2?'m-danger':'')+'"><div class="metric-label">Total FYS</div><div class="metric-value">'+Math.round(totalFF).toLocaleString('sv')+'</div><div class="metric-sub">kr förlorat</div></div>'+
+    '<div class="metric"><div class="metric-label">BV %</div><div class="metric-value">'+avgBvP.toFixed(1)+'%</div><div class="metric-sub">bv/försäljning</div></div>'+
+    '<div class="metric"><div class="metric-label">Total bruttovinst</div><div class="metric-value">'+Math.round(totalBv).toLocaleString('sv')+'</div><div class="metric-sub">kr perioden</div></div>'+
+    '';
+}
+
+function buildTabs(){
+  var c={};allProducts.forEach(function(p){c[p.tier]=(c[p.tier]||0)+1});
+  var h='<button class="tab-pill '+(activeTier==='all'?'tp-all':'')+'" onclick="setTier(\'all\')">Alla ('+allProducts.length+')</button>';
+  ['Prioritet','Bra','Genomsnittlig','Låg','Ta bort','Systemfel','Ignorerad','Marg 99%','Kategoriförsäljning','Tobak'].forEach(function(t){
+    if(!c[t])return;
+    h+='<button class="tab-pill '+(activeTier===t?TIER_PILL[t]:'')+'" onclick="setTier(\''+t+'\')">'+t+' ('+c[t]+')</button>';
+  });
+  document.getElementById('tier-tabs').innerHTML=h;
+}
+function setTier(t){activeTier=t;buildTabs();renderTable()}
+
+function buildSummaries(){
+  function group(keyField){
+    var g={};
+    allProducts.forEach(function(p){
+      var k=p[keyField]||'–';
+      if(!g[k])g[k]={grpKey:k,prods:0,antal:0,forsv:0,marg:0,ff:0,bv:0,mPctSum:0,bvPctSum:0,act:0,prio:0,tabort:0};
+      var r=g[k];r.prods++;r.antal+=p.antal;r.forsv+=p.forsv;r.marg+=p.marg;r.ff+=p.ff;r.bv+=p.bv;
+      if(p.antal>0&&p.marg>0){r.mPctSum+=p.margpct;r.bvPctSum+=p.bvpct;r.act++;}
+      if(p.tier==='Prioritet')r.prio++;
+      if(p.tier==='Ta bort'||p.tier==='Systemfel'||p.tier==='Ignorerad'||p.tier==='Marg 99%'||p.tier==='Kategoriförsäljning'||p.tier==='Tobak')r.tabort++;
+    });
+    return Object.values(g).map(function(r){
+      r.avgMargPct=r.forsv>0?r.marg/r.forsv*100:0;
+      r.avgBvPct=r.forsv>0?r.bv/r.forsv*100:0;
+      r.avgSvinnPct=r.forsv>0?r.ff/r.forsv*100:0;
+      return r;
+    });
+  }
+  renderSummary('vom-body',group('vom'));
+  renderSummary('kat-body',group('kat'));
+}
+
+function renderSummary(tbId,data){
+  var sc=sumSortState[tbId]||{field:'bv',dir:'desc'};
+  data.sort(function(a,b){
+    var va=a[sc.field],vb=b[sc.field];
+    if(typeof va==='string')return sc.dir==='asc'?va.localeCompare(vb,'sv'):vb.localeCompare(va,'sv');
+    return sc.dir==='asc'?va-vb:vb-va;
+  });
+  function fmt(n){return n===0?'–':Math.round(n).toLocaleString('sv')}
+  function fmtP(n){return n===0?'–':n.toFixed(1)+'%'}
+  var isVom=tbId==='vom-body';
+  document.getElementById(tbId).innerHTML=data.map(function(r){
+    var svC=r.avgSvinnPct>=2?'style="color:var(--red)"':'';
+    var nameMap=isVom?VOM_NAMES:KAT_NAMES;
+    var name=nameMap[r.grpKey];
+    var keyCell=r.grpKey+(name?'<span class="mc-name">'+name+'</span>':'');
+    return '<tr>'+
+      '<td class="mc">'+keyCell+'</td>'+
+      '<td class="nr" style="color:var(--mut)">'+r.prods+'</td>'+
+      '<td class="nr">'+fmt(r.antal)+'</td>'+
+      '<td class="nr" style="color:var(--acc2)">'+fmt(r.forsv)+'</td>'+
+      '<td class="nr" style="color:var(--grn)">'+fmt(r.marg)+'</td>'+
+      '<td class="nr" style="color:'+(r.avgMargPct>32?'var(--grn)':r.avgMargPct>30?'var(--amb)':r.avgMargPct>0?'var(--red)':'var(--mut)')+'">'+ fmtP(r.avgMargPct)+'</td>'+
+      '<td class="nr" '+(r.avgSvinnPct>=2?'style="color:var(--red)"':'')+'>'+fmt(r.ff)+'</td>'+
+      '<td class="nr" '+svC+'>'+fmtP(r.avgSvinnPct)+'</td>'+
+      '<td class="nr" style="color:var(--grn)">'+fmt(r.bv)+'</td>'+
+      '<td class="nr">'+fmtP(r.avgBvPct)+'</td>'+
+      '<td class="nr" style="color:var(--acc)">'+r.prio+'</td>'+
+      '<td class="nr" style="color:var(--red)">'+r.tabort+'</td>'+
+      '</tr>';
+  }).join('');
+  requestAnimationFrame(setTableHeight);
+}
+
+function sortSum(tbId,th,field){
+  var sc=sumSortState[tbId]||{field:'bv',dir:'desc'};
+  if(sc.field===field)sc.dir=sc.dir==='desc'?'asc':'desc';
+  else{sc.field=field;sc.dir='desc';}
+  sumSortState[tbId]=sc;
+  var thead=document.getElementById(tbId).closest('table').querySelector('thead');
+  thead.querySelectorAll('th').forEach(function(t){t.classList.remove('asc','desc')});
+  th.classList.add(sc.dir==='asc'?'asc':'desc');
+  buildSummaries();
+}
+
+function getWeights(){
+  var vol=parseFloat(document.getElementById('w-vol').value)||0;
+  var marg=parseFloat(document.getElementById('w-marg').value)||0;
+  var margpct=parseFloat(document.getElementById('w-margpct').value)||0;
+  var svinn=parseFloat(document.getElementById('w-svinn').value)||0;
+  var bv=parseFloat(document.getElementById('w-bv').value)||0;
+  var sum=vol+marg+margpct+svinn+bv;
+  return{vol:vol/100,marg:marg/100,margpct:margpct/100,svinn:svinn/100,bv:bv/100,sum:sum};
+}
+
+function updateWeights(){
+  var W=getWeights();
+  var sumEl=document.getElementById('weights-sum');
+  var errEl=document.getElementById('weights-error');
+  sumEl.textContent=W.sum+'%';
+  sumEl.style.color=W.sum===100?'var(--grn)':'var(--red)';
+  ['w-vol','w-marg','w-margpct','w-svinn','w-bv'].forEach(function(id){
+    document.getElementById(id).classList.toggle('err',W.sum!==100);
+  });
+  if(W.sum!==100){
+    errEl.textContent='Vikterna summerar till '+W.sum+'% — måste vara exakt 100%.';
+    errEl.style.display='block';
+    return;
+  }
+  errEl.style.display='none';
+  if(allProducts.length)rescoreAndRender();
+}
+
+function rescoreAndRender(){
+  var maxA=Math.max.apply(null,allProducts.map(function(p){return p.antal}).concat([1]));
+  var maxM=Math.max.apply(null,allProducts.map(function(p){return p.marg}).concat([1]));
+  var maxB=Math.max.apply(null,allProducts.map(function(p){return p.bv}).concat([1]));
+  var W=getWeights();
+  allProducts.forEach(function(p){
+    if(p.tier==='Systemfel'||p.tier==='Ta bort'||p.tier==='Ignorerad'||p.tier==='Marg 99%'||p.tier==='Kategoriförsäljning'||p.tier==='Tobak')return;
+    var vS=(p.antal/maxA)*100, mS=(p.marg/maxM)*100;
+    var mpS=Math.min((p.margpct/60)*100,100), bS=(p.bv/maxB)*100;
+    var fr=p.forsv>0?p.ff/p.forsv:0, sS=Math.max(0,(1-fr)*100);
+    p.score=Math.round(((vS*W.vol)+(mS*W.marg)+(mpS*W.margpct)+(sS*W.svinn)+(bS*W.bv))*10)/10;
+    p.breakdown={vol:Math.round(vS*W.vol*10)/10,marg:Math.round(mS*W.marg*10)/10,margpct:Math.round(mpS*W.margpct*10)/10,svinn:Math.round(sS*W.svinn*10)/10,bv:Math.round(bS*W.bv*10)/10};
+  });
+  // Re-tier within KAT groups
+  var katG={};
+  allProducts.forEach(function(p){
+    if(p.tier==='Systemfel'||p.tier==='Ta bort'||p.tier==='Ignorerad'||p.tier==='Marg 99%'||p.tier==='Kategoriförsäljning'||p.tier==='Tobak')return;
+    var k=p.kat||'__none';
+    if(!katG[k])katG[k]=[];
+    katG[k].push(p);
+  });
+  Object.keys(katG).forEach(function(k){
+    var g=katG[k];g.sort(function(a,b){return b.score-a.score});
+    var n=g.length;
+    g.forEach(function(p,i){var pct=(i+1)/n;p.tier=pct<=.10?'Prioritet':pct<=.40?'Bra':pct<=.80?'Genomsnittlig':'Låg'});
+  });
+  buildMetrics();buildTabs();renderTable();buildSummaries();
+}
+
+function resetWeights(){
+  document.getElementById('w-vol').value=40;
+  document.getElementById('w-marg').value=20;
+  document.getElementById('w-margpct').value=15;
+  document.getElementById('w-svinn').value=10;
+  document.getElementById('w-bv').value=15;
+  updateWeights();
+}
+
+function buildMovers(){
+  var MIN_ANTAL=parseInt(document.getElementById('mv-min').value)||50;
+  var GEM_MAX=parseInt(document.getElementById('mv-gem-max').value)||200;
+  var GEM_MARG=parseFloat(document.getElementById('mv-gem-marg').value)||32;
+  var POT_MARG=parseFloat(document.getElementById('mv-pot-marg').value)||30;
+
+  var active=allProducts.filter(function(p){
+    return p.tier!=='Ta bort'&&p.tier!=='Systemfel'&&p.tier!=='Ignorerad'&&
+           p.tier!=='Marg 99%'&&p.tier!=='Kategoriförsäljning'&&p.tier!=='Tobak'&&
+           p.antal>=MIN_ANTAL;
+  });
+
+  // Potential: top 30% by volume AND margin below threshold
+  var byVol=[].concat(active).sort(function(a,b){return b.antal-a.antal});
+  var volCutoff=byVol.length>0?byVol[Math.ceil(byVol.length*.30)-1].antal:0;
+  var potential=[].concat(active)
+    .filter(function(p){return p.antal>=volCutoff&&p.margpct<POT_MARG})
+    .sort(function(a,b){return a.margpct-b.margpct})
+    .slice(0,10);
+
+  // Dolda pärlor: margin >= threshold AND antal <= max (absolute ceiling, not relative)
+  var gems=[].concat(active)
+    .filter(function(p){return p.antal<=GEM_MAX&&p.margpct>=GEM_MARG})
+    .sort(function(a,b){return a.antal-b.antal})
+    .slice(0,10);
+
+  // Bottom: Låg/Genomsnittlig, sorted by score ascending
+  var bottom=[].concat(active)
+    .filter(function(p){return p.tier==='Låg'||p.tier==='Genomsnittlig'})
+    .sort(function(a,b){return a.score-b.score})
+    .slice(0,15);
+
+  function fmt(n){return n===0?'–':Math.round(n).toLocaleString('sv')}
+  function fmtP(n){return n===0?'–':n.toFixed(1)+'%'}
+  var mpC=function(v){return v>32?'cg':v>30?'ca':v>0?'cr':''};
+  var empty6='<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--mut);font-size:11px">Inga produkter matchar — justera tröskelvärdena</td></tr>';
+  var empty10='<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--mut);font-size:11px">Inga produkter matchar — justera tröskelvärdena</td></tr>';
+
+  document.getElementById('movers-top-body').innerHTML=potential.length?potential.map(function(p){
+    return '<tr>'+
+      '<td class="mc">'+p.kat+(KAT_NAMES[p.kat]?'<span class="mc-name">'+KAT_NAMES[p.kat]+'</span>':'')+'</td>'+
+      '<td style="font-size:11px;max-width:160px">'+p.ben+'</td>'+
+      '<td class="nr">'+fmt(p.antal)+'</td>'+
+      '<td class="nr '+mpC(p.margpct)+'">'+fmtP(p.margpct)+'</td>'+
+      '<td class="nr">'+fmt(p.bv)+'</td>'+
+      '<td class="nr" style="color:var(--mut)">'+p.score+'</td>'+
+      '</tr>';
+  }).join(''):empty6;
+
+  document.getElementById('movers-hidden-body').innerHTML=gems.length?gems.map(function(p){
+    return '<tr>'+
+      '<td class="mc">'+p.kat+(KAT_NAMES[p.kat]?'<span class="mc-name">'+KAT_NAMES[p.kat]+'</span>':'')+'</td>'+
+      '<td style="font-size:11px;max-width:160px">'+p.ben+'</td>'+
+      '<td class="nr">'+fmt(p.antal)+'</td>'+
+      '<td class="nr '+mpC(p.margpct)+'">'+fmtP(p.margpct)+'</td>'+
+      '<td class="nr cg">'+fmt(p.bv)+'</td>'+
+      '<td class="nr" style="color:var(--mut)">'+p.score+'</td>'+
+      '</tr>';
+  }).join(''):empty6;
+
+  document.getElementById('movers-bottom-body').innerHTML=bottom.length?bottom.map(function(p){
+    var ffR=p.ffpct>0?p.ffpct:(p.forsv>0?p.ff/p.forsv*100:0);
+    var ffCl=ffR>=2?'cr':ffR>0?'ca':'cm';
+    return '<tr>'+
+      '<td class="mc">'+p.kat+(KAT_NAMES[p.kat]?'<span class="mc-name">'+KAT_NAMES[p.kat]+'</span>':'')+'</td>'+
+      '<td class="mc">'+p.bnr+'</td>'+
+      '<td class="mc">'+p.ean+'</td>'+
+      '<td style="font-size:11px;max-width:160px">'+p.ben+'</td>'+
+      '<td class="nr">'+fmt(p.antal)+'</td>'+
+      '<td class="nr '+mpC(p.margpct)+'">'+fmtP(p.margpct)+'</td>'+
+      '<td class="nr '+ffCl+'">'+fmtP(ffR)+'</td>'+
+      '<td class="nr">'+fmt(p.bv)+'</td>'+
+      '<td class="nr" style="color:var(--mut)">'+p.score+'</td>'+
+      '<td><span class="badge '+TIER_BADGE[p.tier]+'">'+p.tier+'</span></td>'+
+      '</tr>';
+  }).join(''):empty10;
+}
+
+function setView(v){
+  currentView=v;
+  var views=['products','vom','kat','movers','svinn','katcomp'];
+  document.querySelectorAll('.view-tab').forEach(function(t,i){
+    t.classList.toggle('active',views[i]===v);
+  });
+  document.getElementById('view-products').style.display=v==='products'?'block':'none';
+  ['vom','kat','movers','svinn','katcomp','weights'].forEach(function(k){
+    var el=document.getElementById('view-'+k);
+    el.classList.toggle('visible',v===k);
+    if(v===k){requestAnimationFrame(setTableHeight);if(k==='movers')buildMovers();if(k==='svinn')buildSvinn();if(k==='katcomp')buildKatComp();}
+  });
+}
+
+function toggleHighlight(){
+  highlightMode=!highlightMode;
+  document.getElementById('hl-btn').classList.toggle('active',highlightMode);
+  renderTable();
+}
+
+function sortCol(th){
+  var f=th.dataset.field;
+  if(sortField===f)sortDir=sortDir==='desc'?'asc':'desc';
+  else{sortField=f;sortDir='desc';}
+  var opt=sortField+'|'+sortDir,sel=document.getElementById('sort-sel');
+  for(var i=0;i<sel.options.length;i++){if(sel.options[i].value===opt){sel.value=opt;break}}
+  renderTable();
+}
+
+function buildMultiMenu(menuId,labelId,items,allLabel){
+  var isVom=menuId.includes('vom'),isKat=menuId.includes('kat');
+  var menu=document.getElementById(menuId);
+  var searchId=menuId+'-search';
+  var html='';
+  if(isKat){
+    html+='<input class="multi-search" id="'+searchId+'" type="text" placeholder="Sök KAT..." oninput="filterMultiMenu(\''+menuId+'\')" onclick="event.stopPropagation()">';
+  }
+  html+='<div class="multi-menu-header">'+
+    '<button onclick="setAllChecked(\''+menuId+'\',true)">Välj alla</button>'+
+    '<button onclick="setAllChecked(\''+menuId+'\',false)">Rensa</button>'+
+    '</div>';
+  html+=items.map(function(v){
+    var lbl=isVom?(v+(VOM_NAMES[v]?' – '+VOM_NAMES[v]:''))
+           :isKat?(v+(KAT_NAMES[v]?' – '+KAT_NAMES[v]:''))
+           :v;
+    return '<label class="multi-item" data-lbl="'+lbl.toLowerCase()+'"><input type="checkbox" value="'+v+'" onchange="onMultiChange(\''+menuId+'\',\''+labelId+'\',\''+allLabel+'\')"> '+lbl+'</label>';
+  }).join('');
+  menu.innerHTML=html;
+}
+
+function filterMultiMenu(menuId){
+  var q=(document.getElementById(menuId+'-search').value||'').toLowerCase();
+  document.querySelectorAll('#'+menuId+' .multi-item').forEach(function(el){
+    el.classList.toggle('hidden',q.length>0&&el.dataset.lbl.indexOf(q)===-1);
+  });
+}
+
+function getChecked(menuId){
+  var cbs=document.querySelectorAll('#'+menuId+' input[type=checkbox]:checked');
+  return Array.prototype.map.call(cbs,function(cb){return cb.value});
+}
+
+function setAllChecked(menuId,state){
+  document.querySelectorAll('#'+menuId+' input[type=checkbox]').forEach(function(cb){cb.checked=state});
+  var labelId=menuId.replace('-menu','-label');
+  var allLabel=menuId.replace('-menu','').replace('vom','Alla VOM').replace('kat','Alla KAT');
+  updateMultiLabel(menuId,labelId,allLabel);
+  renderTable();
+}
+
+function onMultiChange(menuId,labelId,allLabel){
+  updateMultiLabel(menuId,labelId,allLabel);
+  renderTable();
+}
+
+function updateMultiLabel(menuId,labelId,allLabel){
+  var sel=getChecked(menuId);
+  var btn=document.getElementById(menuId).closest('.multi-drop').querySelector('.multi-btn');
+  if(sel.length===0){
+    document.getElementById(labelId).textContent=allLabel;
+    btn.classList.remove('active');
+  } else if(sel.length===1){
+    document.getElementById(labelId).textContent=sel[0];
+    btn.classList.add('active');
+  } else {
+    document.getElementById(labelId).textContent=sel.length+' valda';
+    btn.classList.add('active');
+  }
+}
+
+function toggleDrop(dropId){
+  var menu=document.getElementById(dropId).querySelector('.multi-menu');
+  var isOpen=menu.classList.contains('open');
+  // Close all open menus first
+  document.querySelectorAll('.multi-menu.open').forEach(function(m){m.classList.remove('open')});
+  if(!isOpen)menu.classList.add('open');
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click',function(e){
+  if(!e.target.closest('.multi-drop')){
+    document.querySelectorAll('.multi-menu.open').forEach(function(m){m.classList.remove('open')});
+  }
+});
+
+function renderTable(){
+  var parts=document.getElementById('sort-sel').value.split('|');
+  sortField=parts[0];sortDir=parts[1];
+  var q=document.getElementById('search').value.toLowerCase();
+  var selVoms=getChecked('vom-menu');
+  var selKats=getChecked('kat-menu');
+  document.querySelectorAll('#col-row th').forEach(function(th){
+    th.classList.remove('asc','desc');
+    if(th.dataset.field===sortField)th.classList.add(sortDir==='asc'?'asc':'desc');
+  });
+  var flt=allProducts.filter(function(p){
+    if(activeTier!=='all'&&p.tier!==activeTier)return false;
+    if(selVoms.length&&selVoms.indexOf(p.vom)===-1)return false;
+    if(selKats.length&&selKats.indexOf(p.kat)===-1)return false;
+    if(q&&!p.ben.toLowerCase().includes(q)&&!p.vara.toLowerCase().includes(q)&&!p.ean.includes(q)&&!p.bnr.includes(q))return false;
+    return true;
+  });
+  flt.sort(function(a,b){
+    var va=a[sortField],vb=b[sortField];
+    if(typeof va==='string')return sortDir==='asc'?va.localeCompare(vb,'sv'):vb.localeCompare(va,'sv');
+    return sortDir==='asc'?va-vb:vb-va;
+  });
+  document.getElementById('row-count').textContent=flt.length+' produkter';
+  function fmt(n){return n===0?'–':Math.round(n).toLocaleString('sv')}
+  function fmtP(n){return n===0?'–':n.toFixed(1)+'%'}
+  var tb=document.getElementById('table-body');
+  if(!flt.length){tb.innerHTML='<tr><td colspan="16" style="text-align:center;padding:48px;color:var(--mut)">Inga produkter matchar</td></tr>';return}
+  tb.innerHTML=flt.map(function(p){
+    var bw=Math.round(p.score*.55);
+    var bvC=p.bv<0?'cr':p.bv>5000?'cg':'';
+    var ffRatioDisp=p.ffpct>0?p.ffpct:(p.forsv>0?p.ff/p.forsv*100:0);
+    var ffC=ffRatioDisp>=2?'cr':'cm';
+    var bpC=p.bvpct<0?'cr':(p.bvpct>0&&p.bvpct<10?'ca':'');
+    var mpC=p.margpct>32?'cg':p.margpct>30?'ca':p.margpct>0?'cr':p.margpct<0?'cr':'';
+    var isRem=p.tier==='Ta bort'||p.tier==='Systemfel'||p.tier==='Ignorerad'||p.tier==='Marg 99%'||p.tier==='Kategoriförsäljning'||p.tier==='Tobak';
+    var hlC=highlightMode?' '+TIER_HL[p.tier]:'';
+    var remC=(!highlightMode&&isRem)?'tr-remove':'';
+    return '<tr class="'+remC+hlC+'">'+
+      '<td class="mc">'+(p.vom||'–')+(VOM_NAMES[p.vom]?'<span class="mc-name">'+VOM_NAMES[p.vom]+'</span>':'')+'</td>'+
+      '<td class="mc">'+(p.kat||'–')+(KAT_NAMES[p.kat]?'<span class="mc-name">'+KAT_NAMES[p.kat]+'</span>':'')+'</td>'+
+      '<td class="mc">'+(p.ean||'–')+'</td>'+
+      '<td class="mc">'+(p.bnr||'–')+'</td>'+
+      '<td style="max-width:140px;font-size:11px">'+(p.ben||'–')+'</td>'+
+      '<td style="max-width:110px;font-size:10px;color:var(--mut)">'+(p.vara||'–')+'</td>'+
+      '<td class="nr">'+fmt(p.antal)+'</td>'+
+      '<td class="nr" style="color:var(--acc2)">'+fmt(p.forsv)+'</td>'+
+      '<td class="nr">'+(p.marg!==0?fmt(p.marg):'–')+'</td>'+
+      '<td class="nr '+mpC+'">'+fmtP(p.margpct)+'</td>'+
+      '<td class="nr '+ffC+'">'+(p.ff>0?fmt(p.ff):'–')+'</td>'+
+      '<td class="nr '+ffC+'">'+(ffRatioDisp>0?fmtP(ffRatioDisp):'–')+'</td>'+
+      '<td class="nr '+bvC+'">'+fmt(p.bv)+'</td>'+
+      '<td class="nr '+bpC+'">'+fmtP(p.bvpct)+'</td>'+
+      '<td><span class="badge '+TIER_BADGE[p.tier]+'">'+p.tier+'</span></td>'+
+      '<td class="nr"><div class="sw" '+
+        (p.breakdown?'onmouseenter="showScoreTip(event,this)" onmouseleave="hideTip()" data-score="'+p.score+'" data-bd="'+encodeURIComponent(JSON.stringify(p.breakdown))+'"':'')+
+        '><div class="sb" style="width:'+bw+'px;background:'+BAR_COLOR[p.tier]+';opacity:.5"></div><span class="sn">'+p.score+'</span></div><span class="print-score" style="display:none">'+p.score+'</span></td>'+
+      '</tr>';
+  }).join('');
+}
+
+function sortSvinn(field){
+  if(svinnSort.field===field)svinnSort.dir=svinnSort.dir==='desc'?'asc':'desc';
+  else{svinnSort.field=field;svinnSort.dir='desc';}
+  buildSvinn();
+}
+function buildSvinn(){
+  var threshold=parseFloat(document.getElementById('svinn-threshold').value)||0;
+  var active=allProducts.filter(function(p){
+    var ffR=p.ffpct>0?p.ffpct:(p.forsv>0?p.ff/p.forsv*100:0);
+    return ffR>=threshold&&p.antal>0;
+  });
+  // Attach computed ffpct for sorting
+  active=active.map(function(p){
+    var ffR=p.ffpct>0?p.ffpct:(p.forsv>0?p.ff/p.forsv*100:0);
+    return Object.assign({},p,{ffpctCalc:ffR});
+  });
+  active.sort(function(a,b){
+    var va=svinnSort.field==='ffpct'?a.ffpctCalc:a[svinnSort.field];
+    var vb=svinnSort.field==='ffpct'?b.ffpctCalc:b[svinnSort.field];
+    return svinnSort.dir==='desc'?vb-va:va-vb;
+  });
+  // Update header arrows
+  document.querySelectorAll('#svinn-table th').forEach(function(th){th.classList.remove('asc','desc')});
+  var hdField=svinnSort.field==='ffpct'?'svinn-th-ffpct':'svinn-th-'+svinnSort.field;
+  var hdEl=document.getElementById(hdField);
+  if(hdEl)hdEl.classList.add(svinnSort.dir);
+  function fmt(n){return n===0?'–':Math.round(n).toLocaleString('sv')}
+  function fmtP(n){return n===0?'–':n.toFixed(1)+'%'}
+  var mpC=function(v){return v>32?'cg':v>30?'ca':v>0?'cr':''};
+  var el=document.getElementById('svinn-body');
+  if(!active.length){el.innerHTML='<tr><td colspan="12" style="text-align:center;padding:32px;color:var(--mut)">Inga produkter matchar tröskelvärdet</td></tr>';return;}
+  el.innerHTML=active.map(function(p){
+    var ffR=p.ffpctCalc;
+    return '<tr>'+
+      '<td class="mc">'+p.vom+(VOM_NAMES[p.vom]?'<span class="mc-name">'+VOM_NAMES[p.vom]+'</span>':'')+'</td>'+
+      '<td class="mc">'+p.kat+(KAT_NAMES[p.kat]?'<span class="mc-name">'+KAT_NAMES[p.kat]+'</span>':'')+'</td>'+
+      '<td class="mc">'+p.bnr+'</td>'+
+      '<td style="font-size:11px;max-width:160px">'+p.ben+'</td>'+
+      '<td class="nr">'+fmt(p.antal)+'</td>'+
+      '<td class="nr">'+fmt(p.forsv)+'</td>'+
+      '<td class="nr cr">'+fmt(p.ff)+'</td>'+
+      '<td class="nr cr">'+fmtP(ffR)+'</td>'+
+      '<td class="nr">'+fmt(p.marg)+'</td>'+
+      '<td class="nr '+mpC(p.margpct)+'">'+fmtP(p.margpct)+'</td>'+
+      '<td class="nr">'+fmt(p.bv)+'</td>'+
+      '<td><span class="badge '+TIER_BADGE[p.tier]+'">'+p.tier+'</span></td>'+
+      '</tr>';
+  }).join('');
+  requestAnimationFrame(setTableHeight);
+}
+
+function selectKatComp(el){
+  var val=el.dataset.val;
+  var lbl=el.textContent;
+  document.getElementById('katcomp-label').textContent=lbl;
+  document.getElementById('katcomp-drop').querySelector('.multi-btn').classList.add('active');
+  document.querySelectorAll('.multi-menu.open').forEach(function(m){m.classList.remove('open')});
+  buildKatComp(val);
+}
+function filterKatCompMenu(){
+  var q=(document.getElementById('katcomp-search').value||'').toLowerCase();
+  document.querySelectorAll('.katcomp-opt').forEach(function(el){
+    el.classList.toggle('hidden',q.length>0&&el.dataset.lbl.indexOf(q)===-1);
+  });
+}
+function buildKatComp(chosenKat){
+  // Populate searchable menu if empty
+  var menu=document.getElementById('katcomp-menu');
+  if(menu.children.length===0){
+    var kats=[...new Set(allProducts.filter(function(p){return p.antal>0&&p.marg>0&&p.tier!=='Ignorerad'&&p.tier!=='Tobak'&&p.tier!=='Kategoriförsäljning'&&p.tier!=='Marg 99%'}).map(function(p){return p.kat}))].sort();
+    var html='<input class="multi-search" id="katcomp-search" type="text" placeholder="Sök KAT..." oninput="filterKatCompMenu()" onclick="event.stopPropagation()">';
+    html+=kats.map(function(k){
+      var lbl=k+(KAT_NAMES[k]?' – '+KAT_NAMES[k]:'');
+      return '<div class="multi-item katcomp-opt" data-val="'+k+'" data-lbl="'+lbl.toLowerCase()+'" onclick="selectKatComp(this)">'+lbl+'</div>';
+    }).join('');
+    menu.innerHTML=html;
+  }
+  if(!chosenKat){
+    var body=document.getElementById('katcomp-body');
+    body.innerHTML='<tr><td colspan="11" style="text-align:center;padding:32px;color:var(--mut)">Välj en KAT ovan</td></tr>';
+    return;
+  }
+  var body=document.getElementById('katcomp-body');
+  if(!chosenKat){body.innerHTML='<tr><td colspan="11" style="text-align:center;padding:32px;color:var(--mut)">Välj en KAT ovan</td></tr>';return;}
+  var prods=allProducts.filter(function(p){return p.kat===chosenKat&&p.antal>0&&p.marg>0;});
+  if(!prods.length){body.innerHTML='<tr><td colspan="11" style="text-align:center;padding:32px;color:var(--mut)">Inga aktiva produkter i denna KAT</td></tr>';return;}
+  var avgAntal=prods.reduce(function(s,p){return s+p.antal},0)/prods.length;
+  var totMarg=prods.reduce(function(s,p){return s+p.marg},0);
+  var totForsv=prods.reduce(function(s,p){return s+p.forsv},0);
+  var totFF=prods.reduce(function(s,p){return s+p.ff},0);
+  var totBv=prods.reduce(function(s,p){return s+p.bv},0);
+  var avgMarg=totForsv>0?totMarg/totForsv*100:0;
+  var avgFF=totForsv>0?totFF/totForsv*100:0;
+  var avgBv=totBv/prods.length;
+  prods.sort(function(a,b){return b.score-a.score});
+  function fmt(n){return n===0?'–':Math.round(n).toLocaleString('sv')}
+  function fmtP(n){return n===0?'–':n.toFixed(1)+'%'}
+  function diff(v,avg,pct){
+    var d=v-avg;var s=d>=0?'+':'';
+    var cls=d>=0?'cg':'cr';
+    return '<span class="'+cls+'">'+s+(pct?d.toFixed(1)+'pp':Math.round(d).toLocaleString('sv'))+'</span>';
+  }
+  var mpC=function(v){return v>32?'cg':v>30?'ca':v>0?'cr':''};
+  // KAT average summary row
+  var avgRow='<tr style="background:var(--surf2);font-weight:600">'+
+    '<td class="mc" colspan="2" style="color:var(--mut)">KAT-snitt ('+prods.length+' prod.)</td>'+
+    '<td class="nr" style="color:var(--mut)">'+Math.round(avgAntal).toLocaleString('sv')+'</td>'+
+    '<td class="nr" style="color:var(--mut)">–</td>'+
+    '<td class="nr '+(mpC(avgMarg))+'">'+avgMarg.toFixed(1)+'%</td>'+
+    '<td class="nr" style="color:var(--mut)">–</td>'+
+    '<td class="nr '+(avgFF>=2?'cr':avgFF>0?'ca':'cm')+'">'+avgFF.toFixed(1)+'%</td>'+
+    '<td class="nr" style="color:var(--mut)">–</td>'+
+    '<td class="nr">'+Math.round(avgBv).toLocaleString('sv')+'</td>'+
+    '<td class="nr" style="color:var(--mut)">–</td>'+
+    '<td></td>'+
+    '</tr>';
+  body.innerHTML=avgRow+prods.map(function(p){
+    var ffR=p.ffpct>0?p.ffpct:(p.forsv>0?p.ff/p.forsv*100:0);
+    return '<tr>'+
+      '<td class="mc">'+p.bnr+'</td>'+
+      '<td style="font-size:11px;max-width:180px">'+p.ben+'</td>'+
+      '<td class="nr">'+fmt(p.antal)+'</td>'+
+      '<td class="nr">'+diff(p.antal,avgAntal,false)+'</td>'+
+      '<td class="nr '+mpC(p.margpct)+'">'+fmtP(p.margpct)+'</td>'+
+      '<td class="nr">'+diff(p.margpct,avgMarg,true)+'</td>'+
+      '<td class="nr '+(ffR>=2?'cr':ffR>0?'ca':'cm')+'">'+fmtP(ffR)+'</td>'+
+      '<td class="nr">'+diff(-ffR,-avgFF,true)+'</td>'+
+      '<td class="nr">'+fmt(p.bv)+'</td>'+
+      '<td class="nr">'+diff(p.bv,avgBv,false)+'</td>'+
+      '<td><span class="badge '+TIER_BADGE[p.tier]+'">'+p.tier+'</span></td>'+
+      '</tr>';
+  }).join('');
+  requestAnimationFrame(setTableHeight);
+}
+
+function exportExcel(){
+  var selVoms=getChecked('vom-menu');
+  var selKats=getChecked('kat-menu');
+  var q=document.getElementById('search').value.toLowerCase();
+
+  var filtered=allProducts.filter(function(p){
+    if(activeTier!=='all'&&p.tier!==activeTier)return false;
+    if(selVoms.length&&selVoms.indexOf(p.vom)===-1)return false;
+    if(selKats.length&&selKats.indexOf(p.kat)===-1)return false;
+    if(q&&!p.ben.toLowerCase().includes(q)&&!p.vara.toLowerCase().includes(q)&&!p.ean.includes(q)&&!p.bnr.includes(q))return false;
+    return true;
+  });
+  filtered.sort(function(a,b){
+    var va=a[sortField],vb=b[sortField];
+    if(typeof va==='string')return sortDir==='asc'?va.localeCompare(vb,'sv'):vb.localeCompare(va,'sv');
+    return sortDir==='asc'?va-vb:vb-va;
+  });
+
+  // Sheet 1: Products
+  var prodRows=[['VOM','VOM Namn','KAT','KAT Namn','EAN/PLU','BNR','Produkt','Producent','Antal','Förs.värde kr','Marginal kr','Marg %','FYS kr','FYS %','Bruttovinst kr','BV %','Nivå','Poäng']];
+  filtered.forEach(function(p){
+    var ffR=p.ffpct>0?p.ffpct:(p.forsv>0?p.ff/p.forsv*100:0);
+    prodRows.push([
+      p.vom, VOM_NAMES[p.vom]||'',
+      p.kat, KAT_NAMES[p.kat]||'',
+      p.ean, p.bnr, p.ben, p.vara,
+      p.antal, p.forsv, p.marg, p.margpct,
+      p.ff, Math.round(ffR*10)/10,
+      p.bv, p.bvpct,
+      p.tier, p.score
+    ]);
+  });
+
+  // Sheet 2: VOM summary
+  var vomRows=[['VOM','Namn','Produkter','Ant. sålda','Förs.värde kr','Marginal kr','Marg %','FYS kr','FYS %','Bruttovinst kr','BV %','Prioritet','Ta bort']];
+  var vomG={};
+  allProducts.forEach(function(p){
+    var k=p.vom||'–';
+    if(!vomG[k])vomG[k]={prods:0,antal:0,forsv:0,marg:0,ff:0,bv:0,mPctSum:0,bvPctSum:0,act:0,prio:0,tabort:0};
+    var r=vomG[k];r.prods++;r.antal+=p.antal;r.forsv+=p.forsv;r.marg+=p.marg;r.ff+=p.ff;r.bv+=p.bv;
+    if(p.antal>0&&p.marg>0){r.mPctSum+=p.margpct;r.bvPctSum+=p.bvpct;r.act++;}
+    if(p.tier==='Prioritet')r.prio++;
+    if(p.tier==='Ta bort'||p.tier==='Systemfel'||p.tier==='Ignorerad'||p.tier==='Marg 99%'||p.tier==='Kategoriförsäljning'||p.tier==='Tobak')r.tabort++;
+  });
+  Object.keys(vomG).sort().forEach(function(k){
+    var r=vomG[k];
+    var margPct=r.forsv>0?Math.round(r.marg/r.forsv*1000)/10:0;
+    var ffPct=r.forsv>0?Math.round(r.ff/r.forsv*1000)/10:0;
+    var bvPct=r.forsv>0?Math.round(r.bv/r.forsv*1000)/10:0;
+    vomRows.push([k,VOM_NAMES[k]||'',r.prods,r.antal,Math.round(r.forsv),Math.round(r.marg),margPct,Math.round(r.ff),ffPct,Math.round(r.bv),bvPct,r.prio,r.tabort]);
+  });
+
+  // Sheet 3: KAT summary
+  var katRows=[['KAT','Namn','Produkter','Ant. sålda','Förs.värde kr','Marginal kr','Marg %','FYS kr','FYS %','Bruttovinst kr','BV %','Prioritet','Ta bort']];
+  var katG={};
+  allProducts.forEach(function(p){
+    var k=p.kat||'–';
+    if(!katG[k])katG[k]={prods:0,antal:0,forsv:0,marg:0,ff:0,bv:0,mPctSum:0,bvPctSum:0,act:0,prio:0,tabort:0};
+    var r=katG[k];r.prods++;r.antal+=p.antal;r.forsv+=p.forsv;r.marg+=p.marg;r.ff+=p.ff;r.bv+=p.bv;
+    if(p.antal>0&&p.marg>0){r.mPctSum+=p.margpct;r.bvPctSum+=p.bvpct;r.act++;}
+    if(p.tier==='Prioritet')r.prio++;
+    if(p.tier==='Ta bort'||p.tier==='Systemfel'||p.tier==='Ignorerad'||p.tier==='Marg 99%'||p.tier==='Kategoriförsäljning'||p.tier==='Tobak')r.tabort++;
+  });
+  Object.keys(katG).sort().forEach(function(k){
+    var r=katG[k];
+    var margPct=r.forsv>0?Math.round(r.marg/r.forsv*1000)/10:0;
+    var ffPct=r.forsv>0?Math.round(r.ff/r.forsv*1000)/10:0;
+    var bvPct=r.forsv>0?Math.round(r.bv/r.forsv*1000)/10:0;
+    katRows.push([k,KAT_NAMES[k]||'',r.prods,r.antal,Math.round(r.forsv),Math.round(r.marg),margPct,Math.round(r.ff),ffPct,Math.round(r.bv),bvPct,r.prio,r.tabort]);
+  });
+
+  var XS=typeof XLSXStyle!=='undefined'?XLSXStyle:XLSX;
+  var wb=XS.utils.book_new();
+
+  // Helper: create sheet with column widths
+  function makeSheet(rows,colWidths){
+    var ws=XS.utils.aoa_to_sheet(rows);
+    ws['!cols']=colWidths.map(function(w){return{wch:w}});
+    return ws;
+  }
+
+  // Color helpers — ARGB hex strings
+  var GREEN_BG='FFC6EFCE', GREEN_FG='FF006100';
+  var AMBER_BG='FFFFEB9C', AMBER_FG='FF9C5700';
+  var RED_BG='FFFFC7CE',   RED_FG='FF9C0006';
+  var MUTED='FF888888';
+
+  function cellStyle(bgArgb,fgArgb){
+    return {font:{color:{argb:fgArgb}},fill:{patternType:'solid',fgColor:{argb:bgArgb}}};
+  }
+
+  // Apply styles to product sheet
+  var wsProd=makeSheet(prodRows,[6,16,6,24,12,12,12,8,10,8,10,8,10,8,12,8,14,7]);
+  // Col indices (0-based): 10=Marg%, 12=FF%, tier=16
+  prodRows.forEach(function(row,ri){
+    if(ri===0)return; // skip header
+    var margpct=row[11], ffpct=row[13], tier=row[16];
+    // Marg % cell (col 11)
+    var margAddr=XLSX.utils.encode_cell({r:ri,c:11});
+    if(!wsProd[margAddr])wsProd[margAddr]={v:row[11],t:'n'};
+    if(margpct>32)wsProd[margAddr].s=cellStyle(GREEN_BG,GREEN_FG);
+    else if(margpct>30)wsProd[margAddr].s=cellStyle(AMBER_BG,AMBER_FG);
+    else if(margpct>0)wsProd[margAddr].s=cellStyle(RED_BG,RED_FG);
+    // FYS % cell (col 13)
+    var ffAddr=XLSX.utils.encode_cell({r:ri,c:13});
+    if(!wsProd[ffAddr])wsProd[ffAddr]={v:row[13],t:'n'};
+    if(ffpct>=2)wsProd[ffAddr].s=cellStyle(RED_BG,RED_FG);
+    else if(ffpct>0)wsProd[ffAddr].s=cellStyle(AMBER_BG,AMBER_FG);
+    // FYS kr cell (col 12) — same color
+    var ffkrAddr=XLSX.utils.encode_cell({r:ri,c:12});
+    if(!wsProd[ffkrAddr])wsProd[ffkrAddr]={v:row[12],t:'n'};
+    if(ffpct>=2)wsProd[ffkrAddr].s=cellStyle(RED_BG,RED_FG);
+    else if(ffpct>0)wsProd[ffkrAddr].s=cellStyle(AMBER_BG,AMBER_FG);
+    // Tier cell (col 16) — muted for removed/ignored
+    var tierAddr=XLSX.utils.encode_cell({r:ri,c:16});
+    if(!wsProd[tierAddr])wsProd[tierAddr]={v:tier,t:'s'};
+    if(tier==='Prioritet')wsProd[tierAddr].s=cellStyle(GREEN_BG,GREEN_FG);
+    else if(tier==='Bra')wsProd[tierAddr].s=cellStyle('FFD9EDF7','FF31708F');
+    else if(tier==='Låg')wsProd[tierAddr].s=cellStyle(AMBER_BG,AMBER_FG);
+    else if(tier==='Ta bort'||tier==='Ignorerad'||tier==='Tobak'||tier==='Systemfel'||tier==='Marg 99%'||tier==='Kategoriförsäljning')wsProd[tierAddr].s=cellStyle(RED_BG,RED_FG);
+  });
+
+  // Apply styles to VOM/KAT summary sheets (col 6=snitt marg%, col 8=snitt FF%)
+  function styleSum(rows,ws){
+    rows.forEach(function(row,ri){
+      if(ri===0)return;
+      var margpct=row[6], ffpct=row[8];
+      var mAddr=XLSX.utils.encode_cell({r:ri,c:6});
+      if(!ws[mAddr])ws[mAddr]={v:margpct,t:'n'};
+      if(margpct>32)ws[mAddr].s=cellStyle(GREEN_BG,GREEN_FG);
+      else if(margpct>30)ws[mAddr].s=cellStyle(AMBER_BG,AMBER_FG);
+      else if(margpct>0)ws[mAddr].s=cellStyle(RED_BG,RED_FG);
+      var fAddr=XLSX.utils.encode_cell({r:ri,c:8});
+      if(!ws[fAddr])ws[fAddr]={v:ffpct,t:'n'};
+      if(ffpct>=2)ws[fAddr].s=cellStyle(RED_BG,RED_FG);
+      else if(ffpct>0)ws[fAddr].s=cellStyle(AMBER_BG,AMBER_FG);
+    });
+    return ws;
+  }
+  var wsVom=styleSum(vomRows,makeSheet(vomRows,[6,20,8,12,14,12,10,12,10,12,10,8,8]));
+  var wsKat=styleSum(katRows,makeSheet(katRows,[6,30,8,12,14,12,10,12,10,12,10,8,8]));
+
+  XS.utils.book_append_sheet(wb,wsProd,'Produkter');
+  XS.utils.book_append_sheet(wb,wsVom,'Per VOM');
+  XS.utils.book_append_sheet(wb,wsKat,'Per KAT');
+
+  // Sheet 4: Svinn Watchlist
+  var svinnThreshold=parseFloat(document.getElementById('svinn-threshold').value)||0;
+  var svinnData=allProducts.filter(function(p){
+    var ffR=p.ffpct>0?p.ffpct:(p.forsv>0?p.ff/p.forsv*100:0);
+    return ffR>=svinnThreshold&&p.antal>0;
+  }).map(function(p){
+    var ffR=p.ffpct>0?p.ffpct:(p.forsv>0?p.ff/p.forsv*100:0);
+    return Object.assign({},p,{ffpctCalc:ffR});
+  });
+  svinnData.sort(function(a,b){return b.ff-a.ff});
+  var svinnRows=[['VOM','VOM Namn','KAT','KAT Namn','BNR','Produkt','Antal','Förs.värde','FYS kr','FYS %','Marg kr','Marg %','BV kr','Nivå']];
+  svinnData.forEach(function(p){
+    svinnRows.push([p.vom,VOM_NAMES[p.vom]||'',p.kat,KAT_NAMES[p.kat]||'',p.bnr,p.ben,p.antal,Math.round(p.forsv),Math.round(p.ff),Math.round(p.ffpctCalc*10)/10,Math.round(p.marg),Math.round(p.margpct*10)/10,Math.round(p.bv),p.tier]);
+  });
+  var wsSvinn=makeSheet(svinnRows,[6,20,6,30,8,30,10,12,10,8,10,8,10,14]);
+  // Color FF% and FYS kr columns (cols 8,9)
+  svinnData.forEach(function(p,ri){
+    var ffpct=p.ffpctCalc;
+    ['8','9'].forEach(function(ci){
+      var addr=XS.utils.encode_cell({r:ri+1,c:parseInt(ci)});
+      if(!wsSvinn[addr])return;
+      if(ffpct>=2)wsSvinn[addr].s=cellStyle(RED_BG,RED_FG);
+      else if(ffpct>0)wsSvinn[addr].s=cellStyle(AMBER_BG,AMBER_FG);
+    });
+  });
+  XS.utils.book_append_sheet(wb,wsSvinn,'Svinn Watchlist');
+
+  // Sheet 5: KAT comparison — export all KATs
+  var katCompRows=[['KAT','KAT Namn','BNR','Produkt','Antal','vs KAT-snitt','Marg %','vs KAT-snitt (pp)','FYS %','vs KAT-snitt (pp)','BV kr','vs KAT-snitt','Nivå']];
+  var activeKats=[...new Set(allProducts.filter(function(p){return p.antal>0&&p.marg>0&&p.tier!=='Ignorerad'&&p.tier!=='Tobak'&&p.tier!=='Kategoriförsäljning'&&p.tier!=='Marg 99%'}).map(function(p){return p.kat}))].sort();
+  activeKats.forEach(function(k){
+    var prods=allProducts.filter(function(p){return p.kat===k&&p.antal>0&&p.marg>0;});
+    if(!prods.length)return;
+    var avgAntal=prods.reduce(function(s,p){return s+p.antal},0)/prods.length;
+    var avgMarg=prods.reduce(function(s,p){return s+p.margpct},0)/prods.length;
+    var avgFF=prods.reduce(function(s,p){var r=p.ffpct>0?p.ffpct:(p.forsv>0?p.ff/p.forsv*100:0);return s+r},0)/prods.length;
+    var avgBv=prods.reduce(function(s,p){return s+p.bv},0)/prods.length;
+    prods.sort(function(a,b){return b.score-a.score}).forEach(function(p){
+      var ffR=p.ffpct>0?p.ffpct:(p.forsv>0?p.ff/p.forsv*100:0);
+      katCompRows.push([k,KAT_NAMES[k]||'',p.bnr,p.ben,p.antal,Math.round(p.antal-avgAntal),Math.round(p.margpct*10)/10,Math.round((p.margpct-avgMarg)*10)/10,Math.round(ffR*10)/10,Math.round((ffR-avgFF)*10)/10,Math.round(p.bv),Math.round(p.bv-avgBv),p.tier]);
+    });
+  });
+  var wsKatComp=makeSheet(katCompRows,[6,30,8,30,10,12,8,12,8,12,10,12,14]);
+  // Color marg % (col 6) and FYS % (col 8)
+  katCompRows.forEach(function(row,ri){
+    if(ri===0)return;
+    var margpct=row[6],ffpct=row[8];
+    var mAddr=XS.utils.encode_cell({r:ri,c:6});
+    if(wsSvinn[mAddr]){}
+    if(wsKatComp[mAddr]){if(margpct>32)wsKatComp[mAddr].s=cellStyle(GREEN_BG,GREEN_FG);else if(margpct>30)wsKatComp[mAddr].s=cellStyle(AMBER_BG,AMBER_FG);else if(margpct>0)wsKatComp[mAddr].s=cellStyle(RED_BG,RED_FG);}
+    var fAddr=XS.utils.encode_cell({r:ri,c:8});
+    if(wsKatComp[fAddr]){if(ffpct>=2)wsKatComp[fAddr].s=cellStyle(RED_BG,RED_FG);else if(ffpct>0)wsKatComp[fAddr].s=cellStyle(AMBER_BG,AMBER_FG);}
+    // Color vs snitt columns: positive marg = green, negative = red (col 7); negative ff diff = good
+    var mDiff=row[7];
+    var mDAddr=XS.utils.encode_cell({r:ri,c:7});
+    if(wsKatComp[mDAddr]){wsKatComp[mDAddr].s=cellStyle(mDiff>=0?GREEN_BG:RED_BG,mDiff>=0?GREEN_FG:RED_FG);}
+  });
+  XS.utils.book_append_sheet(wb,wsKatComp,'KAT Jämförelse');
+
+  var period=document.getElementById('period-disp').textContent.replace(/[^a-zA-Z0-9åäöÅÄÖ\-_]/g,'_');
+  var wbOut=typeof XLSXStyle!=='undefined'?XLSXStyle:XLSX;
+  wbOut.writeFile(wb,'Bruttovinst_'+(period||'export')+'.xlsx',{cellStyles:true,bookType:'xlsx'});
+}
+
+
+function exportPDF(){
+  var pd=document.getElementById('period-disp'),orig=pd.textContent;
+  var tier=activeTier==='all'?'':activeTier;
+  var selVoms=getChecked('vom-menu');
+  var selKats=getChecked('kat-menu');
+  var cnt=document.getElementById('row-count').textContent;
+  var parts=[orig,tier,selVoms.length?'VOM: '+selVoms.join(', '):'',selKats.length?'KAT: '+selKats.join(', '):'',cnt].filter(Boolean).join(' · ');
+  pd.textContent=parts;
+  document.title='Bruttovinst Analys'+(orig?' '+orig:'');
+
+  // Build descriptive product section title
+  var sortLabels={
+    'score':'Poäng','antal':'Antal sålda','forsv':'Försäljningsvärde',
+    'bv':'Bruttovinst','bvpct':'BV %','ff':'FYS','ffpct':'FYS %',
+    'marg':'Marginal kr','ben':'Produkt A→Ö'
+  };
+  var titleParts=['Produktlista'];
+  if(activeTier!=='all')titleParts.push('Nivå: '+activeTier);
+  if(selVoms.length)titleParts.push('VOM: '+selVoms.join(', '));
+  if(selKats.length)titleParts.push('KAT: '+selKats.join(', '));
+  titleParts.push('Sorterat: '+(sortLabels[sortField]||sortField)+' ('+(sortDir==='desc'?'hög→låg':'låg→hög')+')');
+  titleParts.push('('+cnt+')');
+  document.getElementById('prod-print-title').textContent=titleParts.join(' · ');
+
+  // Build per-KAT product tables for PDF
+  var filteredForPdf=allProducts.filter(function(p){
+    if(activeTier!=='all'&&p.tier!==activeTier)return false;
+    if(selVoms.length&&selVoms.indexOf(p.vom)===-1)return false;
+    if(selKats.length&&selKats.indexOf(p.kat)===-1)return false;
+    return true;
+  });
+  filteredForPdf.sort(function(a,b){
+    var va=a[sortField],vb=b[sortField];
+    if(typeof va==='string')return sortDir==='asc'?va.localeCompare(vb,'sv'):vb.localeCompare(va,'sv');
+    return sortDir==='asc'?va-vb:vb-va;
+  });
+  var katOrderP=[],katMapP={};
+  filteredForPdf.forEach(function(p){
+    var k=p.kat||'–';if(!katMapP[k]){katMapP[k]=[];katOrderP.push(k);}katMapP[k].push(p);
+  });
+  function fmtP2(n){return n===0?'–':n.toFixed(1)+'%'}
+  function fmt2(n){return n===0?'–':Math.round(n).toLocaleString('sv')}
+  var thRow='<thead><tr><th>BNR</th><th>EAN</th><th>Produkt</th><th>Producent</th><th style="text-align:right">Antal</th><th style="text-align:right">Förs.värde</th><th style="text-align:right">Marg kr</th><th style="text-align:right">Marg%</th><th style="text-align:right">FYS kr</th><th style="text-align:right">FF%</th><th style="text-align:right">BV kr</th><th style="text-align:right">BV%</th><th>Nivå</th><th style="text-align:right">Poäng</th></tr></thead>';
+  var katHtml=katOrderP.map(function(k){
+    var name=KAT_NAMES[k]||'';
+    var rows=katMapP[k].map(function(p){
+      var ffR=p.ffpct>0?p.ffpct:(p.forsv>0?p.ff/p.forsv*100:0);
+      return '<tr><td class="mc">'+p.bnr+'</td><td class="mc">'+p.ean+'</td>'+
+        '<td style="font-size:8px">'+p.ben+'</td><td style="font-size:7.5px;color:#666">'+p.vara+'</td>'+
+        '<td style="text-align:right">'+fmt2(p.antal)+'</td>'+
+        '<td style="text-align:right">'+fmt2(p.forsv)+'</td>'+
+        '<td style="text-align:right">'+fmt2(p.marg)+'</td>'+
+        '<td style="text-align:right">'+fmtP2(p.margpct)+'</td>'+
+        '<td style="text-align:right">'+fmt2(p.ff)+'</td>'+
+        '<td style="text-align:right">'+fmtP2(ffR)+'</td>'+
+        '<td style="text-align:right">'+fmt2(p.bv)+'</td>'+
+        '<td style="text-align:right">'+fmtP2(p.bvpct)+'</td>'+
+        '<td style="font-size:7px;font-weight:700">'+p.tier+'</td>'+
+        '<td style="text-align:right;color:#888">'+p.score+'</td></tr>';
+    }).join('');
+    return '<div class="pdf-kat-section"><div class="pdf-kat-title">'+k+(name?' – '+name:'')+'</div><table>'+thRow+'<tbody>'+rows+'</tbody></table></div>';
+  }).join('');
+  var katContainer=document.createElement('div');
+  katContainer.id='pdf-kat-container';
+  katContainer.innerHTML=katHtml;
+  document.querySelector('.main').appendChild(katContainer);
+
+
+  // Show all sections for print
+  var prodEl=document.getElementById('view-products');
+  var vomEl=document.getElementById('view-vom');
+  var katEl=document.getElementById('view-kat');
+  var prevProd=prodEl.style.display, prevVom=vomEl.classList.contains('visible'), prevKat=katEl.classList.contains('visible');
+  vomEl.classList.add('visible');
+  katEl.classList.add('visible');
+  window.print();
+  setTimeout(function(){
+    pd.textContent=orig;
+    document.getElementById('prod-print-title').textContent='Produktlista';
+    if(!prevVom)vomEl.classList.remove('visible');
+    if(!prevKat)katEl.classList.remove('visible');
+    var c=document.getElementById('pdf-kat-container');if(c)c.remove();
+    setView(currentView);
+  },500);
+}
+
+var st;
+document.getElementById('search').addEventListener('input',function(){clearTimeout(st);st=setTimeout(renderTable,150)});
+
+function showScoreTip(e,el){
+  var total=el.dataset.score;
+  var bd=JSON.parse(decodeURIComponent(el.dataset.bd));
+  var W=getWeights();
+  var labels={vol:'Volym',marg:'Marginal kr',margpct:'Marginal %',svinn:'Svinnstraff',bv:'Bruttovinst'};
+  var pcts={vol:Math.round(W.vol*100),marg:Math.round(W.marg*100),margpct:Math.round(W.margpct*100),svinn:Math.round(W.svinn*100),bv:Math.round(W.bv*100)};
+  document.getElementById('tt-vol').textContent=bd.vol+' pts';
+  document.getElementById('tt-marg').textContent=bd.marg+' pts';
+  document.getElementById('tt-margpct').textContent=bd.margpct+' pts';
+  document.getElementById('tt-svinn').textContent=bd.svinn+' pts';
+  document.getElementById('tt-bv').textContent=bd.bv+' pts';
+  document.getElementById('tt-total').textContent=total+' pts';
+  // Update labels with actual weights
+  var rows=document.querySelectorAll('#score-tooltip .tt-label');
+  rows[0].textContent='Volym ('+pcts.vol+'%)';
+  rows[1].textContent='Marginal kr ('+pcts.marg+'%)';
+  rows[2].textContent='Marginal % ('+pcts.margpct+'%)';
+  rows[3].textContent='Svinnstraff ('+pcts.svinn+'%)';
+  rows[4].textContent='Bruttovinst ('+pcts.bv+'%)';
+  var tip=document.getElementById('score-tooltip');
+  tip.style.display='block';
+  var x=e.clientX+14, y=e.clientY-10;
+  if(x+220>window.innerWidth)x=e.clientX-230;
+  tip.style.left=x+'px';
+  tip.style.top=y+'px';
+}
+function hideTip(){document.getElementById('score-tooltip').style.display='none'}
+
+function resetApp(){
+  allProducts=[];activeTier='all';sortField='score';sortDir='desc';fileName='';highlightMode=false;currentView='products';sumSortState={};
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('upload-screen').style.display='flex';
+  document.getElementById('file-input').value='';
+  document.getElementById('search').value='';
+  document.getElementById('sort-sel').value='score|desc';
+  document.getElementById('vom-menu').innerHTML='';
+  document.getElementById('kat-menu').innerHTML='';
+  document.getElementById('vom-label').textContent='Alla VOM';
+  document.getElementById('kat-label').textContent='Alla KAT';
+  document.getElementById('vom-drop').querySelector('.multi-btn').classList.remove('active');
+  document.getElementById('kat-drop').querySelector('.multi-btn').classList.remove('active');
+  document.getElementById('hl-btn').classList.remove('active');
+  resetWeights();
+  setView('products');
+  clearErr(false);clearErr(true);
+}
+</script>
+</body>
+</html>
