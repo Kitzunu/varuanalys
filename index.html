@@ -256,7 +256,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <span><span class="legend-dot" style="background:var(--amb)"></span>Låg (botten 20%)</span>
       <span><span class="legend-dot" style="background:var(--red)"></span>Ta bort</span>
       <span><span class="legend-dot" style="background:var(--red)"></span>Systemfel (0 sålda)</span>
-      <span><span class="legend-dot" style="background:var(--red)"></span>Ignorerad (KAT 248 / 276 / 334 / 335 / 337 / 338)</span>
+      <span><span class="legend-dot" style="background:var(--red)"></span>Ignorerad (KAT 248 / 276 / 334 / 335 / 337 / 338 / 352)</span>
       <span><span class="legend-dot" style="background:var(--red)"></span>Tobak (KAT 344 / 345)</span>
       <span><span class="legend-dot" style="background:var(--red)"></span>Kategoriförsäljning (BNR = KAT)</span>
       <span><span class="legend-dot" style="background:var(--red)"></span>Marg 99% (systemdata)</span>
@@ -655,7 +655,7 @@ function processData(rows){
   var scored=products.map(function(p){
     if(p.bnr&&p.kat&&p.bnr.trim()===p.kat.trim())return Object.assign({},p,{score:0,tier:'Kategoriförsäljning'});
     if(p.kat==='344'||p.kat==='345')return Object.assign({},p,{score:0,tier:'Tobak'});
-    if(p.kat==='248'||p.kat==='338'||p.kat==='337'||p.kat==='334'||p.kat==='335'||p.kat==='276')return Object.assign({},p,{score:0,tier:'Ignorerad'});
+    if(p.kat==='248'||p.kat==='338'||p.kat==='337'||p.kat==='334'||p.kat==='335'||p.kat==='276'||p.kat==='352')return Object.assign({},p,{score:0,tier:'Ignorerad'});
     if(p.margpct>=99)return Object.assign({},p,{score:0,tier:'Marg 99%'});
     if(p.antal===0||p.antal<0)return Object.assign({},p,{score:0,tier:'Systemfel'});
     if(p.bv<0||p.marg<0)return Object.assign({},p,{score:0,tier:'Ta bort'});
