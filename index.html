@@ -77,87 +77,87 @@
 body{background:var(--bg);color:var(--txt);font-family:var(--sans);min-height:100vh}
 #upload-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;position:relative}
 #upload-screen::before{content:'';position:fixed;top:-200px;left:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(200,240,96,.06),transparent 70%);pointer-events:none}
-.logo{font-family:var(--disp);font-size:13px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--acc);margin-bottom:60px;opacity:.8}
+.logo{font-family:var(--disp);font-size:13px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#4a7c00;margin-bottom:60px;opacity:.8}
 .upload-title{font-family:var(--disp);font-size:clamp(36px,6vw,64px);font-weight:800;line-height:1.05;text-align:center;margin-bottom:16px;letter-spacing:-.02em}
-.upload-title span{color:var(--acc)}
-.upload-sub{font-size:15px;color:var(--mut);text-align:center;margin-bottom:56px;max-width:420px;line-height:1.6}
+.upload-title span{color:#4a7c00}
+.upload-sub{font-size:15px;color:#888;text-align:center;margin-bottom:56px;max-width:420px;line-height:1.6}
 .drop-zone{width:min(520px,100%);border:1.5px dashed var(--brd2);border-radius:16px;padding:48px 32px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surf);position:relative}
-.drop-zone:hover,.drop-zone.drag-over{border-color:var(--acc);background:rgba(200,240,96,.04)}
+.drop-zone:hover,.drop-zone.drag-over{border-color:#4a7c00;background:rgba(200,240,96,.04)}
 .drop-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
 .drop-icon{width:56px;height:56px;background:var(--surf2);border:1px solid var(--brd2);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:22px}
 .drop-label{font-family:var(--disp);font-size:16px;font-weight:600;margin-bottom:6px}
-.drop-hint{font-size:12px;color:var(--mut)}
-.format-note{margin-top:28px;font-size:12px;color:var(--mut);display:flex;align-items:center;gap:8px}
+.drop-hint{font-size:12px;color:#888}
+.format-note{margin-top:28px;font-size:12px;color:#888;display:flex;align-items:center;gap:8px}
 .format-note span{background:var(--surf2);border:1px solid var(--brd);border-radius:4px;padding:2px 8px;font-family:var(--mono);font-size:11px}
 #loading-screen{display:none;min-height:100vh;align-items:center;justify-content:center;flex-direction:column;gap:24px}
-.spinner{width:40px;height:40px;border:2px solid var(--brd2);border-top-color:var(--acc);border-radius:50%;animation:spin .7s linear infinite}
+.spinner{width:40px;height:40px;border:2px solid var(--brd2);border-top-color:#4a7c00;border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.loading-text{font-family:var(--disp);font-size:15px;color:var(--mut)}
+.loading-text{font-family:var(--disp);font-size:15px;color:#888}
 #dashboard{display:none}
 .topbar{padding:14px 28px;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;background:rgba(15,15,14,.95);backdrop-filter:blur(12px);z-index:100;flex-wrap:wrap}
 .topbar-left{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.topbar-logo{font-family:var(--disp);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--acc)}
-.topbar-file{font-family:var(--mono);font-size:11px;color:var(--mut)}
-.topbar-period{font-size:11px;color:var(--mut);background:var(--surf2);border:1px solid var(--brd);border-radius:6px;padding:3px 10px}
+.topbar-logo{font-family:var(--disp);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#4a7c00}
+.topbar-file{font-family:var(--mono);font-size:11px;color:#888}
+.topbar-period{font-size:11px;color:#888;background:var(--surf2);border:1px solid var(--brd);border-radius:6px;padding:3px 10px}
 .btn-new{font-family:var(--disp);font-size:12px;font-weight:600;padding:7px 16px;border-radius:8px;cursor:pointer;background:var(--surf2);border:1px solid var(--brd2);color:var(--txt);transition:all .15s;letter-spacing:.04em}
-.btn-new:hover{border-color:var(--acc);color:var(--acc)}
-.btn-hl.active{background:rgba(200,240,96,.1);border-color:rgba(200,240,96,.35);color:var(--acc)}
+.btn-new:hover{border-color:#4a7c00;color:#4a7c00}
+.btn-hl.active{background:rgba(200,240,96,.1);border-color:rgba(200,240,96,.35);color:#4a7c00}
 .main{padding:24px 28px;max-width:1700px;margin:0 auto}
 .metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px;margin-bottom:18px}
 .metric{background:var(--surf);border:1px solid var(--brd);border-radius:12px;padding:15px 18px}
-.metric-label{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.metric-label{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
 .metric-value{font-family:var(--disp);font-size:22px;font-weight:700;line-height:1}
-.metric-sub{font-size:10px;color:var(--mut);margin-top:4px}
-.m-accent{border-color:rgba(200,240,96,.25);background:rgba(200,240,96,.04)} .m-accent .metric-value{color:var(--acc)}
-.m-danger{border-color:rgba(240,96,96,.2)} .m-danger .metric-value{color:var(--red)}
-.m-blue{border-color:rgba(96,212,240,.2)} .m-blue .metric-value{color:var(--acc2)}
-.m-green{border-color:rgba(96,212,160,.25);background:rgba(96,212,160,.04)} .m-green .metric-value{color:var(--grn)}
-.m-amber{border-color:rgba(240,184,96,.25);background:rgba(240,184,96,.04)} .m-amber .metric-value{color:var(--amb)}
-.legend{display:flex;gap:14px;flex-wrap:wrap;background:var(--surf);border:1px solid var(--brd);border-radius:10px;padding:11px 16px;margin-bottom:16px;font-size:11px;color:var(--mut);align-items:center}
+.metric-sub{font-size:10px;color:#888;margin-top:4px}
+.m-accent{border-color:rgba(200,240,96,.25);background:rgba(200,240,96,.04)} .m-accent .metric-value{color:#4a7c00}
+.m-danger{border-color:rgba(240,96,96,.2)} .m-danger .metric-value{color:#cc0000}
+.m-blue{border-color:rgba(96,212,240,.2)} .m-blue .metric-value{color:#005a70}
+.m-green{border-color:rgba(96,212,160,.25);background:rgba(96,212,160,.04)} .m-green .metric-value{color:#007a4a}
+.m-amber{border-color:rgba(240,184,96,.25);background:rgba(240,184,96,.04)} .m-amber .metric-value{color:#b36b00}
+.legend{display:flex;gap:14px;flex-wrap:wrap;background:var(--surf);border:1px solid var(--brd);border-radius:10px;padding:11px 16px;margin-bottom:16px;font-size:11px;color:#888;align-items:center}
 .legend-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:middle}
 .view-tabs{display:flex;gap:6px;margin-bottom:14px;border-bottom:1px solid var(--brd);padding-bottom:14px}
-.view-tab{font-family:var(--disp);font-size:12px;font-weight:600;padding:6px 16px;border-radius:8px;cursor:pointer;border:1px solid var(--brd);background:var(--surf);color:var(--mut);transition:all .15s}
+.view-tab{font-family:var(--disp);font-size:12px;font-weight:600;padding:6px 16px;border-radius:8px;cursor:pointer;border:1px solid var(--brd);background:var(--surf);color:#888;transition:all .15s}
 .view-tab:hover{color:var(--txt);border-color:var(--brd2)}
 .view-tab.active{background:var(--surf2);border-color:var(--brd2);color:var(--txt)}
 .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
-.tab-pill{font-family:var(--disp);font-size:12px;font-weight:600;padding:6px 14px;border-radius:100px;cursor:pointer;border:1px solid var(--brd);background:var(--surf);color:var(--mut);transition:all .15s;letter-spacing:.03em}
+.tab-pill{font-family:var(--disp);font-size:12px;font-weight:600;padding:6px 14px;border-radius:100px;cursor:pointer;border:1px solid var(--brd);background:var(--surf);color:#888;transition:all .15s;letter-spacing:.03em}
 .tab-pill:hover{color:var(--txt);border-color:var(--brd2)}
 .tp-all{color:var(--txt);border-color:var(--brd2);background:var(--surf2)}
-.tp-p{background:rgba(200,240,96,.1);border-color:rgba(200,240,96,.3);color:var(--acc)}
-.tp-b{background:rgba(96,212,240,.1);border-color:rgba(96,212,240,.25);color:var(--acc2)}
+.tp-p{background:rgba(200,240,96,.1);border-color:rgba(200,240,96,.3);color:#4a7c00}
+.tp-b{background:rgba(96,212,240,.1);border-color:rgba(96,212,240,.25);color:#005a70}
 .tp-g{background:rgba(255,255,255,.06);border-color:var(--brd2);color:var(--txt)}
-.tp-l{background:rgba(240,184,96,.1);border-color:rgba(240,184,96,.25);color:var(--amb)}
-.tp-r{background:rgba(240,96,96,.1);border-color:rgba(240,96,96,.25);color:var(--red)}
+.tp-l{background:rgba(240,184,96,.1);border-color:rgba(240,184,96,.25);color:#b36b00}
+.tp-r{background:rgba(240,96,96,.1);border-color:rgba(240,96,96,.25);color:#cc0000}
 .tp-sf{background:rgba(176,96,240,.1);border-color:rgba(176,96,240,.25);color:#c060f0}
 .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
 .search-input{padding:7px 12px;font-size:12px;font-family:var(--sans);background:var(--surf);border:1px solid var(--brd2);border-radius:8px;color:var(--txt);width:220px;outline:none;transition:border-color .15s}
-.search-input:focus{border-color:var(--acc)} .search-input::placeholder{color:var(--mut)}
+.search-input:focus{border-color:#4a7c00} .search-input::placeholder{color:#888}
 .filter-select{padding:7px 10px;font-size:12px;font-family:var(--sans);background:var(--surf);border:1px solid var(--brd2);border-radius:8px;color:var(--txt);outline:none;cursor:pointer}
 .multi-drop{position:relative;display:inline-block}
 .multi-btn{padding:7px 10px;font-size:12px;font-family:var(--sans);background:var(--surf);border:1px solid var(--brd2);border-radius:8px;color:var(--txt);cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;min-width:110px;transition:border-color .15s}
-.multi-btn:hover{border-color:var(--acc)}
-.multi-btn.active{border-color:var(--acc);color:var(--acc)}
-.drop-arrow{font-size:10px;color:var(--mut);margin-left:auto}
+.multi-btn:hover{border-color:#4a7c00}
+.multi-btn.active{border-color:#4a7c00;color:#4a7c00}
+.drop-arrow{font-size:10px;color:#888;margin-left:auto}
 .multi-menu{display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:200;background:var(--surf);border:1px solid var(--brd2);border-radius:10px;padding:6px;min-width:240px;max-height:320px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.4)}
 .multi-menu.open{display:block}
 .multi-menu-header{display:flex;gap:6px;padding:4px 4px 8px;border-bottom:1px solid var(--brd);margin-bottom:4px}
 .multi-search{width:100%;padding:5px 9px;font-size:11px;font-family:var(--sans);background:var(--surf2);border:1px solid var(--brd2);border-radius:7px;color:var(--txt);outline:none;box-sizing:border-box;margin-bottom:6px}
-.multi-search:focus{border-color:var(--acc)}
-.multi-search::placeholder{color:var(--mut)}
+.multi-search:focus{border-color:#4a7c00}
+.multi-search::placeholder{color:#888}
 .multi-item.hidden{display:none}
-.multi-menu-header button{font-size:10px;font-family:var(--disp);background:none;border:none;color:var(--mut);cursor:pointer;padding:2px 6px;border-radius:4px}
+.multi-menu-header button{font-size:10px;font-family:var(--disp);background:none;border:none;color:#888;cursor:pointer;padding:2px 6px;border-radius:4px}
 .multi-menu-header button:hover{color:var(--txt);background:var(--surf2)}
 .multi-item{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px;cursor:pointer;font-size:12px;color:var(--txt)}
 .multi-item:hover{background:var(--surf2)}
-.multi-item input[type=checkbox]{width:13px;height:13px;accent-color:var(--acc);cursor:pointer;flex-shrink:0}
-.row-count{font-size:11px;color:var(--mut);margin-left:auto;font-family:var(--mono)}
+.multi-item input[type=checkbox]{width:13px;height:13px;accent-color:#4a7c00;cursor:pointer;flex-shrink:0}
+.row-count{font-size:11px;color:#888;margin-left:auto;font-family:var(--mono)}
 .table-wrap{border-radius:12px;border:1px solid var(--brd)}
 .table-scroll{overflow:auto;max-height:calc(100vh - 280px)}
 table{width:max-content;min-width:100%;border-collapse:collapse;font-size:11px}
 thead th{position:sticky;top:0;z-index:11;background:var(--surf2)}
-th{background:var(--surf2);padding:6px 8px;text-align:left;font-size:9.5px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);border-bottom:1px solid var(--brd);white-space:nowrap;user-select:none;transition:color .1s}
+th{background:var(--surf2);padding:6px 8px;text-align:left;font-size:9.5px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:#888;border-bottom:1px solid var(--brd);white-space:nowrap;user-select:none;transition:color .1s}
 th.sortable{cursor:pointer} th.sortable:hover{color:var(--txt)}
-th.asc::after{content:' ↑';color:var(--acc)} th.desc::after{content:' ↓';color:var(--acc)}
+th.asc::after{content:' ↑';color:#4a7c00} th.desc::after{content:' ↓';color:#4a7c00}
 td{padding:5px 8px;border-bottom:1px solid var(--brd);vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:rgba(255,255,255,.02)}
@@ -168,25 +168,25 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .hl-l td{background:rgba(240,184,96,.06)!important}
 .hl-r td,.hl-sf td{background:rgba(240,96,96,.06)!important;opacity:.6}
 .hl-r:hover td,.hl-sf:hover td{opacity:1}
-.mc{font-family:var(--mono);font-size:9.5px;color:var(--mut);white-space:nowrap}
-.mc-name{display:block;font-family:var(--sans);font-size:9px;color:var(--mut);opacity:.65;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
+.mc{font-family:var(--mono);font-size:9.5px;color:#888;white-space:nowrap}
+.mc-name{display:block;font-family:var(--sans);font-size:9px;color:#888;opacity:.65;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
 .nr{text-align:right}
-.cr{color:var(--red)!important} .ca{color:var(--amb)!important} .cg{color:var(--grn)!important} .cm{color:var(--mut)!important}
+.cr{color:#cc0000!important} .ca{color:#b36b00!important} .cg{color:#007a4a!important} .cm{color:#888!important}
 .badge{display:inline-flex;align-items:center;font-size:9px;font-weight:600;font-family:var(--disp);padding:2px 7px;border-radius:100px;white-space:nowrap;letter-spacing:.03em}
-.bg-p{background:rgba(200,240,96,.12);color:var(--acc);border:1px solid rgba(200,240,96,.22)}
-.bg-b{background:rgba(96,212,240,.1);color:var(--acc2);border:1px solid rgba(96,212,240,.2)}
-.bg-g{background:rgba(255,255,255,.05);color:var(--mut);border:1px solid var(--brd)}
-.bg-l{background:rgba(240,184,96,.1);color:var(--amb);border:1px solid rgba(240,184,96,.22)}
-.bg-r{background:rgba(240,96,96,.1);color:var(--red);border:1px solid rgba(240,96,96,.2)}
+.bg-p{background:rgba(200,240,96,.12);color:#4a7c00;border:1px solid rgba(200,240,96,.22)}
+.bg-b{background:rgba(96,212,240,.1);color:#005a70;border:1px solid rgba(96,212,240,.2)}
+.bg-g{background:rgba(255,255,255,.05);color:#888;border:1px solid var(--brd)}
+.bg-l{background:rgba(240,184,96,.1);color:#b36b00;border:1px solid rgba(240,184,96,.22)}
+.bg-r{background:rgba(240,96,96,.1);color:#cc0000;border:1px solid rgba(240,96,96,.2)}
 .bg-sf{background:rgba(176,96,240,.12);color:#c060f0;border:1px solid rgba(176,96,240,.25)}
 .sw{display:flex;align-items:center;gap:6px;justify-content:flex-end;cursor:default}
 .sb{height:3px;border-radius:2px;flex-shrink:0}
 .sn{font-family:var(--mono);font-size:11px;min-width:26px;text-align:right}
 #score-tooltip{display:none;position:fixed;z-index:9999;background:var(--surf2);border:1px solid var(--brd2);border-radius:10px;padding:10px 14px;font-size:11px;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.5);min-width:200px}
-#score-tooltip .tt-title{font-family:var(--disp);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin-bottom:8px}
+#score-tooltip .tt-title{font-family:var(--disp);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#888;margin-bottom:8px}
 #score-tooltip .tt-row{display:flex;justify-content:space-between;gap:16px;margin-bottom:4px;font-size:11px}
 #score-tooltip .tt-row:last-child{margin-bottom:0;border-top:1px solid var(--brd);padding-top:6px;margin-top:4px;font-weight:600}
-#score-tooltip .tt-label{color:var(--mut)}
+#score-tooltip .tt-label{color:#888}
 #score-tooltip .tt-val{font-family:var(--mono);color:var(--txt)}
 .summary-section{display:none}
 .summary-section.visible{display:block}
@@ -194,21 +194,21 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .sum-wrap{border-radius:12px;border:1px solid var(--brd)}
 .sum-scroll{overflow:auto;max-height:calc(100vh - 280px)}
 .sum-table{width:max-content;min-width:100%;border-collapse:collapse;font-size:11px}
-.sum-table thead th{position:sticky;top:0;z-index:11;background:var(--surf2);padding:6px 8px;text-align:left;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);border-bottom:1px solid var(--brd);white-space:nowrap;cursor:pointer;user-select:none;transition:color .1s}
+.sum-table thead th{position:sticky;top:0;z-index:11;background:var(--surf2);padding:6px 8px;text-align:left;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:#888;border-bottom:1px solid var(--brd);white-space:nowrap;cursor:pointer;user-select:none;transition:color .1s}
 .sum-table thead th:hover{color:var(--txt)}
-.sum-table thead th.asc::after{content:' ↑';color:var(--acc)} .sum-table thead th.desc::after{content:' ↓';color:var(--acc)}
+.sum-table thead th.asc::after{content:' ↑';color:#4a7c00} .sum-table thead th.desc::after{content:' ↓';color:#4a7c00}
 .sum-table td{padding:5px 8px;border-bottom:1px solid var(--brd);vertical-align:middle}
 .sum-table tr:last-child td{border-bottom:none}
 .sum-table tr:hover td{background:rgba(255,255,255,.02)}
-.error-box{background:rgba(240,96,96,.08);border:1px solid rgba(240,96,96,.2);border-radius:10px;padding:14px 18px;margin-bottom:14px;font-size:13px;color:var(--red);display:none}
+.error-box{background:rgba(240,96,96,.08);border:1px solid rgba(240,96,96,.2);border-radius:10px;padding:14px 18px;margin-bottom:14px;font-size:13px;color:#cc0000;display:none}
 #pdf-kat-container{display:none}
 .weight-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .weight-row label{font-size:13px;color:var(--txt);flex:1}
 .weight-input-wrap{display:flex;align-items:center;gap:6px}
 .weight-input-wrap input[type=number]{width:64px;padding:6px 10px;font-size:13px;font-family:var(--mono);background:var(--surf2);border:1px solid var(--brd2);border-radius:8px;color:var(--txt);outline:none;text-align:right;transition:border-color .15s}
-.weight-input-wrap input[type=number]:focus{border-color:var(--acc)}
-.weight-input-wrap input[type=number].err{border-color:var(--red)}
-.weight-pct{font-size:13px;color:var(--mut);font-family:var(--mono)}
+.weight-input-wrap input[type=number]:focus{border-color:#4a7c00}
+.weight-input-wrap input[type=number].err{border-color:#cc0000}
+.weight-pct{font-size:13px;color:#888;font-family:var(--mono)}
 </style>
 </head>
 <body>
@@ -255,7 +255,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <span style="font-family:var(--disp);font-size:11px;font-weight:600;color:var(--txt)">Poängmodell:</span>
       <span>Volym 40%</span><span>·</span><span>Marginal kr 20%</span><span>·</span><span>Marginal % 15%</span><span>·</span><span>Svinnstraff 10%</span><span>·</span><span>Bruttovinst 15%</span>
       <span style="color:var(--brd2)">|</span>
-      <span style="cursor:pointer;color:var(--acc2)" onclick="setView('weights')" title="Klicka för att ändra vikter">⚙ Ändra vikter</span>
+      <span style="cursor:pointer;color:#005a70" onclick="setView('weights')" title="Klicka för att ändra vikter">⚙ Ändra vikter</span>
       <span style="color:var(--brd2)">|</span>
       <span title="Rangordnas relativt inom KAT. Topp 10% = Prioritet, 11–40% = Bra, 41–80% = Genomsnittlig, botten 20% = Låg">Rangordning inom KAT</span>
       <span style="color:var(--brd2)">|</span>
@@ -287,19 +287,19 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <!-- Threshold controls -->
       <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;background:var(--surf);border:1px solid var(--brd);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:12px">
         <span style="font-family:var(--disp);font-size:12px;font-weight:600;color:var(--txt)">Tröskelvärden</span>
-        <label style="display:flex;align-items:center;gap:6px;color:var(--mut)">Min antal sålda
+        <label style="display:flex;align-items:center;gap:6px;color:#888">Min antal sålda
           <input type="number" id="mv-min" value="10" min="1" style="width:60px;padding:4px 7px;font-size:11px;font-family:var(--mono);background:var(--surf2);border:1px solid var(--brd2);border-radius:6px;color:var(--txt);outline:none" oninput="buildMovers()">
         </label>
-        <label style="display:flex;align-items:center;gap:6px;color:var(--mut)">Max antal för Dolda pärlor
+        <label style="display:flex;align-items:center;gap:6px;color:#888">Max antal för Dolda pärlor
           <input type="number" id="mv-gem-max" value="50" min="1" style="width:70px;padding:4px 7px;font-size:11px;font-family:var(--mono);background:var(--surf2);border:1px solid var(--brd2);border-radius:6px;color:var(--txt);outline:none" oninput="buildMovers()">
         </label>
-        <label style="display:flex;align-items:center;gap:6px;color:var(--mut)">Min marg % för Dolda pärlor
+        <label style="display:flex;align-items:center;gap:6px;color:#888">Min marg % för Dolda pärlor
           <input type="number" id="mv-gem-marg" value="32" min="1" style="width:55px;padding:4px 7px;font-size:11px;font-family:var(--mono);background:var(--surf2);border:1px solid var(--brd2);border-radius:6px;color:var(--txt);outline:none" oninput="buildMovers()">
-          <span style="color:var(--mut)">%</span>
+          <span style="color:#888">%</span>
         </label>
-        <label style="display:flex;align-items:center;gap:6px;color:var(--mut)">Max marg % för Potential
+        <label style="display:flex;align-items:center;gap:6px;color:#888">Max marg % för Potential
           <input type="number" id="mv-pot-marg" value="30" min="1" style="width:55px;padding:4px 7px;font-size:11px;font-family:var(--mono);background:var(--surf2);border:1px solid var(--brd2);border-radius:6px;color:var(--txt);outline:none" oninput="buildMovers()">
-          <span style="color:var(--mut)">%</span>
+          <span style="color:#888">%</span>
         </label>
         <div class="multi-drop" id="mv-kat-drop" style="margin-left:auto">
           <button class="multi-btn" onclick="toggleDrop('mv-kat-drop')" style="min-width:180px">
@@ -314,11 +314,11 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
 
         <div>
-          <div style="font-family:var(--disp);font-size:13px;font-weight:700;margin-bottom:4px;color:var(--acc)">↑ Potential — hög volym, låg marginal</div>
-          <div style="font-size:11px;color:var(--mut);margin-bottom:12px">Säljer bra men tjänar dåligt — se över inköpspris eller försäljningspris</div>
+          <div style="font-family:var(--disp);font-size:13px;font-weight:700;margin-bottom:4px;color:#4a7c00">↑ Potential — hög volym, låg marginal</div>
+          <div style="font-size:11px;color:#888;margin-bottom:12px">Säljer bra men tjänar dåligt — se över inköpspris eller försäljningspris</div>
           <div class="table-wrap"><div class="table-scroll" style="max-height:360px">
             <table><thead><tr>
-              <th>KAT</th><th>Produkt</th>
+              <th>KAT</th><th>BNR</th><th>EAN</th><th>Produkt</th>
               <th style="text-align:right">Antal</th>
               <th style="text-align:right">Marg %</th>
               <th style="text-align:right">BV kr</th>
@@ -328,11 +328,11 @@ tr:hover td{background:rgba(255,255,255,.02)}
         </div>
 
         <div>
-          <div style="font-family:var(--disp);font-size:13px;font-weight:700;margin-bottom:4px;color:var(--acc2)">★ Dolda pärlor — hög marginal, låg volym</div>
-          <div style="font-size:11px;color:var(--mut);margin-bottom:12px">Tjänar bra men säljer lite — kan gynnas av bättre hyllplacering</div>
+          <div style="font-family:var(--disp);font-size:13px;font-weight:700;margin-bottom:4px;color:#005a70">★ Dolda pärlor — hög marginal, låg volym</div>
+          <div style="font-size:11px;color:#888;margin-bottom:12px">Tjänar bra men säljer lite — kan gynnas av bättre hyllplacering</div>
           <div class="table-wrap"><div class="table-scroll" style="max-height:360px">
             <table><thead><tr>
-              <th>KAT</th><th>Produkt</th>
+              <th>KAT</th><th>BNR</th><th>EAN</th><th>Produkt</th>
               <th style="text-align:right">Antal</th>
               <th style="text-align:right">Marg %</th>
               <th style="text-align:right">BV kr</th>
@@ -344,8 +344,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
       </div>
 
       <div style="margin-top:20px">
-        <div style="font-family:var(--disp);font-size:13px;font-weight:700;margin-bottom:4px;color:var(--red)">↓ Låg poäng — kandidater för bortplockning</div>
-        <div style="font-size:11px;color:var(--mut);margin-bottom:12px">Nivå Låg eller Genomsnittlig — säljer lite och tjänar lite</div>
+        <div style="font-family:var(--disp);font-size:13px;font-weight:700;margin-bottom:4px;color:#cc0000">↓ Låg poäng — kandidater för bortplockning</div>
+        <div style="font-size:11px;color:#888;margin-bottom:12px">Nivå Låg eller Genomsnittlig — säljer lite och tjänar lite</div>
         <div class="table-wrap"><div class="table-scroll" style="max-height:280px">
           <table><thead><tr>
             <th>KAT</th><th>BNR</th><th>EAN/PLU</th><th>Produkt</th>
@@ -364,10 +364,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div id="view-svinn" class="summary-section">
       <div class="print-section-title">Svinn Watchlist</div>
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap">
-        <span style="font-size:11px;color:var(--mut)">Visa produkter med FYS %</span>
-        <span style="font-size:11px;color:var(--mut)">≥</span>
+        <span style="font-size:11px;color:#888">Visa produkter med FYS %</span>
+        <span style="font-size:11px;color:#888">≥</span>
         <input type="number" id="svinn-threshold" value="2" min="0" step="0.5" style="width:60px;padding:4px 8px;font-size:11px;font-family:var(--mono);background:var(--surf2);border:1px solid var(--brd2);border-radius:6px;color:var(--txt);outline:none" oninput="buildSvinn()">
-        <span style="font-size:11px;color:var(--mut)">% — sorterade efter FYS kr (högst först)</span>
+        <span style="font-size:11px;color:#888">% — sorterade efter FYS kr (högst först)</span>
       </div>
       <div class="table-wrap"><div class="table-scroll">
         <table id="svinn-table"><thead><tr>
@@ -387,7 +387,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <!-- KAT comparison -->
     <div id="view-katcomp" class="summary-section">
       <div class="print-section-title" id="katcomp-print-title">KAT Jämförelse</div>
-      <div style="font-size:11px;color:var(--mut);margin-bottom:12px">Varje produkt jämförs med snittet för sin KAT-grupp. Grön = över snitt, röd = under snitt.</div>
+      <div style="font-size:11px;color:#888;margin-bottom:12px">Varje produkt jämförs med snittet för sin KAT-grupp. Grön = över snitt, röd = under snitt.</div>
       <div class="toolbar" style="margin-bottom:12px">
         <div class="multi-drop" id="katcomp-drop">
           <button class="multi-btn" onclick="toggleDrop('katcomp-drop')" style="min-width:280px">
@@ -398,7 +398,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       </div>
       <div class="table-wrap"><div class="table-scroll">
         <table id="katcomp-table"><thead><tr>
-          <th>BNR</th><th>Produkt</th>
+          <th>BNR</th><th>EAN</th><th>Produkt</th>
           <th class="sortable nr" onclick="sortKatComp('antal')">Antal</th>
           <th class="sortable nr" onclick="sortKatComp('dAntal')">Avvikelse</th>
           <th class="sortable nr" onclick="sortKatComp('margpct')">Marg %</th>
@@ -416,8 +416,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div id="view-weights" class="summary-section">
       <div style="background:var(--surf);border:1px solid var(--brd);border-radius:12px;padding:20px 24px;max-width:560px">
         <div style="font-family:var(--disp);font-size:14px;font-weight:700;margin-bottom:4px">Poängvikter</div>
-        <div style="font-size:12px;color:var(--mut);margin-bottom:20px">Vikterna måste summera till 100%. Ändringarna slår igenom direkt.</div>
-        <div id="weights-error" style="display:none;color:var(--red);font-size:12px;margin-bottom:12px"></div>
+        <div style="font-size:12px;color:#888;margin-bottom:20px">Vikterna måste summera till 100%. Ändringarna slår igenom direkt.</div>
+        <div id="weights-error" style="display:none;color:#cc0000;font-size:12px;margin-bottom:12px"></div>
         <div style="display:flex;flex-direction:column;gap:14px">
           <div class="weight-row"><label>Volym (Antal sålda)</label><div class="weight-input-wrap"><input type="number" id="w-vol" min="0" max="100" value="40" oninput="updateWeights()"><span class="weight-pct">%</span></div></div>
           <div class="weight-row"><label>Marginal kr</label><div class="weight-input-wrap"><input type="number" id="w-marg" min="0" max="100" value="20" oninput="updateWeights()"><span class="weight-pct">%</span></div></div>
@@ -426,7 +426,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <div class="weight-row"><label>Bruttovinst</label><div class="weight-input-wrap"><input type="number" id="w-bv" min="0" max="100" value="15" oninput="updateWeights()"><span class="weight-pct">%</span></div></div>
         </div>
         <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--brd);display:flex;align-items:center;gap:12px">
-          <span style="font-size:12px;color:var(--mut)">Summa: <strong id="weights-sum" style="color:var(--txt)">100%</strong></span>
+          <span style="font-size:12px;color:#888">Summa: <strong id="weights-sum" style="color:var(--txt)">100%</strong></span>
           <button class="btn-new" onclick="resetWeights()" style="font-size:11px;padding:5px 12px">Återställ standard</button>
         </div>
       </div>
@@ -803,23 +803,24 @@ function renderSummary(tbId,data){
   function fmtP(n){return n===0?'–':n.toFixed(1)+'%'}
   var isVom=tbId==='vom-body';
   document.getElementById(tbId).innerHTML=data.map(function(r){
-    var svC=r.avgSvinnPct>=2?'style="color:var(--red)"':'';
     var nameMap=isVom?VOM_NAMES:KAT_NAMES;
     var name=nameMap[r.grpKey];
     var keyCell=r.grpKey+(name?'<span class="mc-name">'+name+'</span>':'');
+    var mC=r.avgMargPct>32?'#007a4a':r.avgMargPct>30?'#b36b00':r.avgMargPct>0?'#cc0000':'#888';
+    var fC=r.avgSvinnPct>=2?'#cc0000':r.avgSvinnPct>0?'#b36b00':'#111';
     return '<tr>'+
       '<td class="mc">'+keyCell+'</td>'+
-      '<td class="nr" style="color:var(--mut)">'+r.prods+'</td>'+
+      '<td class="nr" style="color:#888">'+r.prods+'</td>'+
       '<td class="nr">'+fmt(r.antal)+'</td>'+
-      '<td class="nr" style="color:var(--acc2)">'+fmt(r.forsv)+'</td>'+
-      '<td class="nr" style="color:var(--grn)">'+fmt(r.marg)+'</td>'+
-      '<td class="nr" style="color:'+(r.avgMargPct>32?'var(--grn)':r.avgMargPct>30?'var(--amb)':r.avgMargPct>0?'var(--red)':'var(--mut)')+'">'+ fmtP(r.avgMargPct)+'</td>'+
-      '<td class="nr" '+(r.avgSvinnPct>=2?'style="color:var(--red)"':'')+'>'+fmt(r.ff)+'</td>'+
-      '<td class="nr" '+svC+'>'+fmtP(r.avgSvinnPct)+'</td>'+
-      '<td class="nr" style="color:var(--grn)">'+fmt(r.bv)+'</td>'+
+      '<td class="nr" style="color:#005a70">'+fmt(r.forsv)+'</td>'+
+      '<td class="nr" style="color:#007a4a">'+fmt(r.marg)+'</td>'+
+      '<td class="nr" style="color:'+mC+'">'+fmtP(r.avgMargPct)+'</td>'+
+      '<td class="nr" style="color:'+fC+'">'+fmt(r.ff)+'</td>'+
+      '<td class="nr" style="color:'+fC+'">'+fmtP(r.avgSvinnPct)+'</td>'+
+      '<td class="nr" style="color:#007a4a">'+fmt(r.bv)+'</td>'+
       '<td class="nr">'+fmtP(r.avgBvPct)+'</td>'+
-      '<td class="nr" style="color:var(--acc)">'+r.prio+'</td>'+
-      '<td class="nr" style="color:var(--red)">'+r.tabort+'</td>'+
+      '<td class="nr" style="color:#4a7c00">'+r.prio+'</td>'+
+      '<td class="nr" style="color:#cc0000">'+r.tabort+'</td>'+
       '</tr>';
   }).join('');
   requestAnimationFrame(setTableHeight);
@@ -974,28 +975,32 @@ function buildMovers(){
   function fmt(n){return n===0?'–':Math.round(n).toLocaleString('sv')}
   function fmtP(n){return n===0?'–':n.toFixed(1)+'%'}
   var mpC=function(v){return v>32?'cg':v>30?'ca':v>0?'cr':''};
-  var empty6='<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--mut);font-size:11px">Inga produkter matchar — justera tröskelvärdena</td></tr>';
-  var empty10='<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--mut);font-size:11px">Inga produkter matchar — justera tröskelvärdena</td></tr>';
+  var empty6='<tr><td colspan="6" style="text-align:center;padding:24px;color:#888;font-size:11px">Inga produkter matchar — justera tröskelvärdena</td></tr>';
+  var empty10='<tr><td colspan="10" style="text-align:center;padding:24px;color:#888;font-size:11px">Inga produkter matchar — justera tröskelvärdena</td></tr>';
 
   document.getElementById('movers-top-body').innerHTML=potential.length?potential.map(function(p){
     return '<tr>'+
       '<td class="mc">'+p.kat+(KAT_NAMES[p.kat]?'<span class="mc-name">'+KAT_NAMES[p.kat]+'</span>':'')+'</td>'+
-      '<td style="font-size:11px;max-width:160px">'+p.ben+'</td>'+
+      '<td class="mc">'+p.bnr+'</td>'+
+      '<td class="mc">'+p.ean+'</td>'+
+      '<td style="font-size:11px;max-width:150px">'+p.ben+'</td>'+
       '<td class="nr">'+fmt(p.antal)+'</td>'+
       '<td class="nr '+mpC(p.margpct)+'">'+fmtP(p.margpct)+'</td>'+
       '<td class="nr">'+fmt(p.bv)+'</td>'+
-      '<td class="nr" style="color:var(--mut)">'+p.score+'</td>'+
+      '<td class="nr" style="color:#888">'+p.score+'</td>'+
       '</tr>';
   }).join(''):empty6;
 
   document.getElementById('movers-hidden-body').innerHTML=gems.length?gems.map(function(p){
     return '<tr>'+
       '<td class="mc">'+p.kat+(KAT_NAMES[p.kat]?'<span class="mc-name">'+KAT_NAMES[p.kat]+'</span>':'')+'</td>'+
-      '<td style="font-size:11px;max-width:160px">'+p.ben+'</td>'+
+      '<td class="mc">'+p.bnr+'</td>'+
+      '<td class="mc">'+p.ean+'</td>'+
+      '<td style="font-size:11px;max-width:150px">'+p.ben+'</td>'+
       '<td class="nr">'+fmt(p.antal)+'</td>'+
       '<td class="nr '+mpC(p.margpct)+'">'+fmtP(p.margpct)+'</td>'+
       '<td class="nr cg">'+fmt(p.bv)+'</td>'+
-      '<td class="nr" style="color:var(--mut)">'+p.score+'</td>'+
+      '<td class="nr" style="color:#888">'+p.score+'</td>'+
       '</tr>';
   }).join(''):empty6;
 
@@ -1011,7 +1016,7 @@ function buildMovers(){
       '<td class="nr '+mpC(p.margpct)+'">'+fmtP(p.margpct)+'</td>'+
       '<td class="nr '+ffCl+'">'+fmtP(ffR)+'</td>'+
       '<td class="nr">'+fmt(p.bv)+'</td>'+
-      '<td class="nr" style="color:var(--mut)">'+p.score+'</td>'+
+      '<td class="nr" style="color:#888">'+p.score+'</td>'+
       '<td><span class="badge '+TIER_BADGE[p.tier]+'">'+p.tier+'</span></td>'+
       '</tr>';
   }).join(''):empty10;
@@ -1148,7 +1153,7 @@ function renderTable(){
   function fmt(n){return n===0?'–':Math.round(n).toLocaleString('sv')}
   function fmtP(n){return n===0?'–':n.toFixed(1)+'%'}
   var tb=document.getElementById('table-body');
-  if(!flt.length){tb.innerHTML='<tr><td colspan="16" style="text-align:center;padding:48px;color:var(--mut)">Inga produkter matchar</td></tr>';return}
+  if(!flt.length){tb.innerHTML='<tr><td colspan="16" style="text-align:center;padding:48px;color:#888">Inga produkter matchar</td></tr>';return}
   tb.innerHTML=flt.map(function(p){
     var bw=Math.round(p.score*.55);
     var bvC=p.bv<0?'cr':p.bv>5000?'cg':'';
@@ -1165,9 +1170,9 @@ function renderTable(){
       '<td class="mc">'+(p.ean||'–')+'</td>'+
       '<td class="mc">'+(p.bnr||'–')+'</td>'+
       '<td style="max-width:140px;font-size:11px">'+(p.ben||'–')+'</td>'+
-      '<td style="max-width:110px;font-size:10px;color:var(--mut)">'+(p.vara||'–')+'</td>'+
+      '<td style="max-width:110px;font-size:10px;color:#888">'+(p.vara||'–')+'</td>'+
       '<td class="nr">'+fmt(p.antal)+'</td>'+
-      '<td class="nr" style="color:var(--acc2)">'+fmt(p.forsv)+'</td>'+
+      '<td class="nr" style="color:#005a70">'+fmt(p.forsv)+'</td>'+
       '<td class="nr">'+(p.marg!==0?fmt(p.marg):'–')+'</td>'+
       '<td class="nr '+mpC+'">'+fmtP(p.margpct)+'</td>'+
       '<td class="nr '+ffC+'">'+(p.ff>0?fmt(p.ff):'–')+'</td>'+
@@ -1212,14 +1217,15 @@ function buildSvinn(){
   function fmtP(n){return n===0?'–':n.toFixed(1)+'%'}
   var mpC=function(v){return v>32?'cg':v>30?'ca':v>0?'cr':''};
   var el=document.getElementById('svinn-body');
-  if(!active.length){el.innerHTML='<tr><td colspan="12" style="text-align:center;padding:32px;color:var(--mut)">Inga produkter matchar tröskelvärdet</td></tr>';return;}
+  if(!active.length){el.innerHTML='<tr><td colspan="13" style="text-align:center;padding:32px;color:#888">Inga produkter matchar tröskelvärdet</td></tr>';return;}
   el.innerHTML=active.map(function(p){
     var ffR=p.ffpctCalc;
     return '<tr>'+
       '<td class="mc">'+p.vom+(VOM_NAMES[p.vom]?'<span class="mc-name">'+VOM_NAMES[p.vom]+'</span>':'')+'</td>'+
       '<td class="mc">'+p.kat+(KAT_NAMES[p.kat]?'<span class="mc-name">'+KAT_NAMES[p.kat]+'</span>':'')+'</td>'+
       '<td class="mc">'+p.bnr+'</td>'+
-      '<td style="font-size:11px;max-width:160px">'+p.ben+'</td>'+
+      '<td class="mc">'+p.ean+'</td>'+
+      '<td style="font-size:11px;max-width:150px">'+p.ben+'</td>'+
       '<td class="nr">'+fmt(p.antal)+'</td>'+
       '<td class="nr">'+fmt(p.forsv)+'</td>'+
       '<td class="nr cr">'+fmt(p.ff)+'</td>'+
@@ -1268,13 +1274,13 @@ function buildKatComp(chosenKat){
   }
   if(!chosenKat){
     var body=document.getElementById('katcomp-body');
-    body.innerHTML='<tr><td colspan="11" style="text-align:center;padding:32px;color:var(--mut)">Välj en KAT ovan</td></tr>';
+    body.innerHTML='<tr><td colspan="11" style="text-align:center;padding:32px;color:#888">Välj en KAT ovan</td></tr>';
     return;
   }
   var body=document.getElementById('katcomp-body');
-  if(!chosenKat){body.innerHTML='<tr><td colspan="11" style="text-align:center;padding:32px;color:var(--mut)">Välj en KAT ovan</td></tr>';return;}
+  if(!chosenKat){body.innerHTML='<tr><td colspan="13" style="text-align:center;padding:32px;color:#888">Välj en KAT ovan</td></tr>';return;}
   var prods=allProducts.filter(function(p){return p.kat===chosenKat&&p.antal>0&&p.marg>0;});
-  if(!prods.length){body.innerHTML='<tr><td colspan="11" style="text-align:center;padding:32px;color:var(--mut)">Inga aktiva produkter i denna KAT</td></tr>';return;}
+  if(!prods.length){body.innerHTML='<tr><td colspan="13" style="text-align:center;padding:32px;color:#888">Inga aktiva produkter i denna KAT</td></tr>';return;}
   var avgAntal=prods.reduce(function(s,p){return s+p.antal},0)/prods.length;
   var totMarg=prods.reduce(function(s,p){return s+p.marg},0);
   var totForsv=prods.reduce(function(s,p){return s+p.forsv},0);
@@ -1314,21 +1320,22 @@ function buildKatComp(chosenKat){
   var mpC=function(v){return v>32?'cg':v>30?'ca':v>0?'cr':''};
   // KAT average summary row
   var avgRow='<tr style="background:var(--surf2);font-weight:600">'+
-    '<td class="mc" colspan="2" style="color:var(--mut)">KAT-snitt ('+prods.length+' prod.)</td>'+
-    '<td class="nr" style="color:var(--mut)">'+Math.round(avgAntal).toLocaleString('sv')+'</td>'+
-    '<td class="nr" style="color:var(--mut)">–</td>'+
+    '<td class="mc" colspan="3" style="color:#888">KAT-snitt ('+prods.length+' prod.)</td>'+
+    '<td class="nr" style="color:#888">'+Math.round(avgAntal).toLocaleString('sv')+'</td>'+
+    '<td class="nr" style="color:#888">–</td>'+
     '<td class="nr '+(mpC(avgMarg))+'">'+avgMarg.toFixed(1)+'%</td>'+
-    '<td class="nr" style="color:var(--mut)">–</td>'+
+    '<td class="nr" style="color:#888">–</td>'+
     '<td class="nr '+(avgFF>=2?'cr':avgFF>0?'ca':'cm')+'">'+avgFF.toFixed(1)+'%</td>'+
-    '<td class="nr" style="color:var(--mut)">–</td>'+
+    '<td class="nr" style="color:#888">–</td>'+
     '<td class="nr">'+Math.round(avgBv).toLocaleString('sv')+'</td>'+
-    '<td class="nr" style="color:var(--mut)">–</td>'+
+    '<td class="nr" style="color:#888">–</td>'+
     '<td></td>'+
     '</tr>';
   body.innerHTML=avgRow+prods.map(function(p){
     return '<tr>'+
       '<td class="mc">'+p.bnr+'</td>'+
-      '<td style="font-size:11px;max-width:180px">'+p.ben+'</td>'+
+      '<td class="mc">'+p.ean+'</td>'+
+      '<td style="font-size:11px;max-width:150px">'+p.ben+'</td>'+
       '<td class="nr">'+fmt(p.antal)+'</td>'+
       '<td class="nr">'+diff(p.antal,avgAntal,false)+'</td>'+
       '<td class="nr '+mpC(p.margpct)+'">'+fmtP(p.margpct)+'</td>'+
