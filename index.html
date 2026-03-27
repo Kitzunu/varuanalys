@@ -63,7 +63,8 @@
   #view-katcomp.print-visible{page-break-before:always}
   .sum-table{width:100%;border-collapse:collapse;font-size:8px;margin-bottom:10px}
   .sum-table th{background:#f0f0f0!important;color:#333!important;padding:4px 6px;border:1px solid #ddd;text-align:left}
-  .sum-table td{padding:3px 6px;border:1px solid #eee;color:#111}
+  .sum-table td{padding:3px 6px;border:1px solid #eee;color:#111!important}
+  .sum-table td[style]{color:unset!important}
 }
 :root{
   --bg:#0f0f0e;--surf:#181817;--surf2:#1f1f1e;
@@ -1595,17 +1596,21 @@ function exportPDF(){
       var name=KAT_NAMES[k]||'';
       var rows=katMapP[k].map(function(p){
         var ffR=p.ffpct>0?p.ffpct:(p.forsv>0?p.ff/p.forsv*100:0);
+        var mpC2=p.margpct>32?'color:#007a4a':p.margpct>30?'color:#b36b00':p.margpct>0?'color:#cc0000':'';
+        var ffC2=ffR>=2?'color:#cc0000':ffR>0?'color:#b36b00':'';
+        var bvC2=p.bv<0?'color:#cc0000':p.bv>5000?'color:#007a4a':'';
+        var tierC={'Prioritet':'color:#3a6000;background:#d4f080','Bra':'color:#005a70;background:#d0f0f8','Låg':'color:#7a4800;background:#fff0d0','Ta bort':'color:#900;background:#ffe0e0','Genomsnittlig':'color:#555;background:#f0f0f0'}[p.tier]||'color:#666;background:#ffe0e0';
         return '<tr><td class="mc">'+p.bnr+'</td><td class="mc">'+p.ean+'</td>'+
           '<td style="font-size:8px">'+p.ben+'</td><td style="font-size:7.5px;color:#666">'+p.vara+'</td>'+
           '<td style="text-align:right">'+fmt2(p.antal)+'</td>'+
-          '<td style="text-align:right">'+fmt2(p.forsv)+'</td>'+
-          '<td style="text-align:right">'+fmt2(p.marg)+'</td>'+
-          '<td style="text-align:right">'+fmtP2(p.margpct)+'</td>'+
-          '<td style="text-align:right">'+fmt2(p.ff)+'</td>'+
-          '<td style="text-align:right">'+fmtP2(ffR)+'</td>'+
-          '<td style="text-align:right">'+fmt2(p.bv)+'</td>'+
+          '<td style="text-align:right;color:#005a70">'+fmt2(p.forsv)+'</td>'+
+          '<td style="text-align:right;color:#007a4a">'+fmt2(p.marg)+'</td>'+
+          '<td style="text-align:right;'+mpC2+'">'+fmtP2(p.margpct)+'</td>'+
+          '<td style="text-align:right;'+ffC2+'">'+fmt2(p.ff)+'</td>'+
+          '<td style="text-align:right;'+ffC2+'">'+fmtP2(ffR)+'</td>'+
+          '<td style="text-align:right;'+bvC2+';color:#007a4a">'+fmt2(p.bv)+'</td>'+
           '<td style="text-align:right">'+fmtP2(p.bvpct)+'</td>'+
-          '<td style="font-size:7px;font-weight:700">'+p.tier+'</td>'+
+          '<td style="font-size:7px;font-weight:700;padding:1px 3px;border-radius:2px;'+tierC+'">'+p.tier+'</td>'+
           '<td style="text-align:right;color:#888">'+p.score+'</td></tr>';
       }).join('');
       return '<div class="pdf-kat-section"><div class="pdf-kat-title">'+k+(name?' – '+name:'')+'</div><table>'+thRow+'<tbody>'+rows+'</tbody></table></div>';
