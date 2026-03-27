@@ -122,6 +122,7 @@ function processData(rows){
 
   showDash();buildMetrics();buildTabs();renderTable();buildSummaries();
   requestAnimationFrame(setTableHeight);
+  saveSession();
 }
 
 function getWeights(){
@@ -178,6 +179,7 @@ function rescoreAndRender(){
     g.forEach(function(p,i){var pct=(i+1)/n;p.tier=pct<=.10?'Prioritet':pct<=.40?'Bra':pct<=.80?'Genomsnittlig':'Låg'});
   });
   buildMetrics();buildTabs();renderTable();buildSummaries();
+  saveSession();
 }
 
 function resetWeights(){

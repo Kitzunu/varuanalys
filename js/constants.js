@@ -28,3 +28,47 @@ var KAT_NAMES={"208":"KYLD FISK&SKALDJURSKONSERV","209":"SMÅMÅL MEJERI","210":
 
 function vomLabel(id){return id+(VOM_NAMES[id]?' – '+VOM_NAMES[id]:'')}
 function katLabel(id){return id+(KAT_NAMES[id]?' – '+KAT_NAMES[id]:'')}
+
+/* Persistence via localStorage */
+var STORAGE_KEY='varuanalys';
+
+function saveSession(){
+  try{
+    var period=document.getElementById('period-disp').textContent||'';
+    var weights={
+      vol:document.getElementById('w-vol').value,
+      marg:document.getElementById('w-marg').value,
+      margpct:document.getElementById('w-margpct').value,
+      svinn:document.getElementById('w-svinn').value,
+      bv:document.getElementById('w-bv').value
+    };
+    var data={
+      v:1,
+      fileName:fileName,
+      period:period,
+      products:allProducts,
+      weights:weights,
+      activeTier:activeTier,
+      sortField:sortField,
+      sortDir:sortDir,
+      highlightMode:highlightMode,
+      currentView:currentView,
+      savedAt:Date.now()
+    };
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+  }catch(e){}
+}
+
+function loadSession(){
+  try{
+    var raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw)return null;
+    var data=JSON.parse(raw);
+    if(!data||!data.v||!data.products||!data.products.length)return null;
+    return data;
+  }catch(e){return null}
+}
+
+function clearSession(){
+  try{localStorage.removeItem(STORAGE_KEY)}catch(e){}
+}

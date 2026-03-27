@@ -1,4 +1,4 @@
-/* Initialization: drag/drop, event listeners, reset */
+/* Initialization: drag/drop, event listeners, session restore, reset */
 
 var dz=document.getElementById('drop-zone'),fi=document.getElementById('file-input');
 dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('drag-over')});
@@ -37,4 +37,58 @@ function resetApp(){
   resetWeights();
   setView('products');
   clearErr(false);clearErr(true);
+  clearSession();
 }
+
+/* Restore previous session on page load */
+(function restoreSession(){
+  var session=loadSession();
+  if(!session)return;
+
+  // Restore weights before scoring (they affect display)
+  if(session.weights){
+    document.getElementById('w-vol').value=session.weights.vol;
+    document.getElementById('w-marg').value=session.weights.marg;
+    document.getElementById('w-margpct').value=session.weights.margpct;
+    document.getElementById('w-svinn').value=session.weights.svinn;
+    document.getElementById('w-bv').value=session.weights.bv;
+    // Update sum display without triggering rescore
+    var W=getWeights();
+    var sumEl=document.getElementById('weights-sum');
+    sumEl.textContent=W.sum+'%';
+    sumEl.style.color=W.sum===100?'var(--grn)':'var(--red)';
+  }
+
+  // Restore state
+  fileName=session.fileName||'';
+  activeTier=session.activeTier||'all';
+  sortField=session.sortField||'score';
+  sortDir=session.sortDir||'desc';
+  highlightMode=session.highlightMode||false;
+  currentView=session.currentView||'products';
+  allProducts=session.products;
+
+  // Restore sort dropdown
+  var sortOpt=sortField+'|'+sortDir;
+  var sel=document.getElementById('sort-sel');
+  for(var i=0;i<sel.options.length;i++){if(sel.options[i].value===sortOpt){sel.value=sortOpt;break}}
+
+  // Restore highlight button state
+  if(highlightMode)document.getElementById('hl-btn').classList.add('active');
+
+  // Build multi-select menus
+  var voms=[...new Set(allProducts.map(function(p){return p.vom}).filter(Boolean))].sort();
+  var kats=[...new Set(allProducts.map(function(p){return p.kat}).filter(Boolean))].sort();
+  buildMultiMenu('vom-menu','vom-label',voms,'Alla VOM');
+  buildMultiMenu('kat-menu','kat-label',kats,'Alla KAT');
+
+  // Restore period and show dashboard
+  document.getElementById('period-disp').textContent=session.period||'';
+  showDash();
+  buildMetrics();
+  buildTabs();
+  renderTable();
+  buildSummaries();
+  setView(currentView);
+  requestAnimationFrame(setTableHeight);
+})();
