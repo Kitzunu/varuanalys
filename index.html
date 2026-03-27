@@ -377,16 +377,16 @@ tr:hover td{background:rgba(255,255,255,.02)}
         </div>
       </div>
       <div class="table-wrap"><div class="table-scroll">
-        <table><thead><tr>
+        <table id="katcomp-table"><thead><tr>
           <th>BNR</th><th>Produkt</th>
-          <th style="text-align:right">Antal</th>
-          <th style="text-align:right">vs snitt</th>
-          <th style="text-align:right">Marg %</th>
-          <th style="text-align:right">vs snitt</th>
-          <th style="text-align:right">FYS %</th>
-          <th style="text-align:right">vs snitt</th>
-          <th style="text-align:right">BV kr</th>
-          <th style="text-align:right">vs snitt</th>
+          <th class="sortable nr" onclick="sortKatComp('antal')">Antal</th>
+          <th class="sortable nr" onclick="sortKatComp('dAntal')">Avvikelse</th>
+          <th class="sortable nr" onclick="sortKatComp('margpct')">Marg %</th>
+          <th class="sortable nr" onclick="sortKatComp('dMarg')">Avvikelse</th>
+          <th class="sortable nr" onclick="sortKatComp('ffR')">FYS %</th>
+          <th class="sortable nr" onclick="sortKatComp('dFF')">Avvikelse</th>
+          <th class="sortable nr" onclick="sortKatComp('bv')">BV kr</th>
+          <th class="sortable nr" onclick="sortKatComp('dBv')">Avvikelse</th>
           <th>Nivå</th>
         </tr></thead><tbody id="katcomp-body"></tbody></table>
       </div></div>
@@ -549,7 +549,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 </div>
 
 <script>
-var allProducts=[],svinnSort={field:'ff',dir:'desc'},activeTier='all',sortField='score',sortDir='desc',fileName='',highlightMode=false,currentView='products';
+var allProducts=[],svinnSort={field:'ff',dir:'desc'},katcompSort={field:'score',dir:'desc'},activeTier='all',sortField='score',sortDir='desc',fileName='',highlightMode=false,currentView='products';
 var sumSortState={};
 var TIER_ORDER={Prioritet:0,Bra:1,Genomsnittlig:2,'Låg':3,'Ta bort':4,Systemfel:5,Ignorerad:6,'Marg 99%':7,Kategoriförsäljning:8,Tobak:9};
 var TIER_BADGE={Prioritet:'bg-p',Bra:'bg-b',Genomsnittlig:'bg-g','Låg':'bg-l','Ta bort':'bg-r',Systemfel:'bg-r',Ignorerad:'bg-r','Marg 99%':'bg-r',Kategoriförsäljning:'bg-r',Tobak:'bg-r'};
@@ -1176,12 +1176,14 @@ function buildSvinn(){
   requestAnimationFrame(setTableHeight);
 }
 
+var katcompCurrentKat=null;
 function selectKatComp(el){
   var val=el.dataset.val;
   var lbl=el.textContent;
   document.getElementById('katcomp-label').textContent=lbl;
   document.getElementById('katcomp-drop').querySelector('.multi-btn').classList.add('active');
   document.querySelectorAll('.multi-menu.open').forEach(function(m){m.classList.remove('open')});
+  katcompCurrentKat=val;
   buildKatComp(val);
 }
 function filterKatCompMenu(){
@@ -1189,6 +1191,11 @@ function filterKatCompMenu(){
   document.querySelectorAll('.katcomp-opt').forEach(function(el){
     el.classList.toggle('hidden',q.length>0&&el.dataset.lbl.indexOf(q)===-1);
   });
+}
+function sortKatComp(field){
+  if(katcompSort.field===field)katcompSort.dir=katcompSort.dir==='desc'?'asc':'desc';
+  else{katcompSort.field=field;katcompSort.dir='desc';}
+  if(katcompCurrentKat)buildKatComp(katcompCurrentKat);
 }
 function buildKatComp(chosenKat){
   // Populate searchable menu if empty
@@ -1219,7 +1226,27 @@ function buildKatComp(chosenKat){
   var avgMarg=totForsv>0?totMarg/totForsv*100:0;
   var avgFF=totForsv>0?totFF/totForsv*100:0;
   var avgBv=totBv/prods.length;
-  prods.sort(function(a,b){return b.score-a.score});
+  // Attach diff values for sorting, then sort
+  prods=prods.map(function(p){
+    var ffR=p.ffpct>0?p.ffpct:(p.forsv>0?p.ff/p.forsv*100:0);
+    return Object.assign({},p,{
+      ffR:ffR,
+      dAntal:p.antal-avgAntal,
+      dMarg:p.margpct-avgMarg,
+      dFF:ffR-avgFF,
+      dBv:p.bv-avgBv
+    });
+  });
+  prods.sort(function(a,b){
+    var va=a[katcompSort.field]||0, vb=b[katcompSort.field]||0;
+    return katcompSort.dir==='desc'?vb-va:va-vb;
+  });
+  // Update header arrows
+  document.querySelectorAll('#katcomp-table th').forEach(function(th){th.classList.remove('asc','desc')});
+  var ths=document.querySelectorAll('#katcomp-table thead th');
+  var fieldMap={antal:2,dAntal:3,margpct:4,dMarg:5,ffR:6,dFF:7,bv:8,dBv:9};
+  var idx=fieldMap[katcompSort.field];
+  if(idx!==undefined&&ths[idx])ths[idx].classList.add(katcompSort.dir);
   function fmt(n){return n===0?'–':Math.round(n).toLocaleString('sv')}
   function fmtP(n){return n===0?'–':n.toFixed(1)+'%'}
   function diff(v,avg,pct){
@@ -1242,7 +1269,6 @@ function buildKatComp(chosenKat){
     '<td></td>'+
     '</tr>';
   body.innerHTML=avgRow+prods.map(function(p){
-    var ffR=p.ffpct>0?p.ffpct:(p.forsv>0?p.ff/p.forsv*100:0);
     return '<tr>'+
       '<td class="mc">'+p.bnr+'</td>'+
       '<td style="font-size:11px;max-width:180px">'+p.ben+'</td>'+
@@ -1250,8 +1276,8 @@ function buildKatComp(chosenKat){
       '<td class="nr">'+diff(p.antal,avgAntal,false)+'</td>'+
       '<td class="nr '+mpC(p.margpct)+'">'+fmtP(p.margpct)+'</td>'+
       '<td class="nr">'+diff(p.margpct,avgMarg,true)+'</td>'+
-      '<td class="nr '+(ffR>=2?'cr':ffR>0?'ca':'cm')+'">'+fmtP(ffR)+'</td>'+
-      '<td class="nr">'+diff(-ffR,-avgFF,true)+'</td>'+
+      '<td class="nr '+(p.ffR>=2?'cr':p.ffR>0?'ca':'cm')+'">'+fmtP(p.ffR)+'</td>'+
+      '<td class="nr">'+diff(-p.ffR,-avgFF,true)+'</td>'+
       '<td class="nr">'+fmt(p.bv)+'</td>'+
       '<td class="nr">'+diff(p.bv,avgBv,false)+'</td>'+
       '<td><span class="badge '+TIER_BADGE[p.tier]+'">'+p.tier+'</span></td>'+
