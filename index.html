@@ -43,9 +43,10 @@
   .hl-g td{background:#f0f0f0!important;color:#444!important} .hl-l td{background:#fff4d0!important;color:#7a4800!important}
   .hl-r td,.hl-sf td{background:#ffe8e8!important;color:#800!important}
   #view-products{display:none!important}
-  .summary-section{display:block!important}
-  #view-movers{display:none!important}
+  .summary-section{display:none!important}
+  .print-visible{display:block!important}
   #pdf-kat-container{display:block!important}
+  #view-weights{display:none!important}
   .pdf-kat-section{page-break-before:always}
   .pdf-kat-section:first-child{page-break-before:auto}
   .pdf-kat-title{font-size:11px;font-weight:700;color:#111;margin:0 0 6px;padding-top:2px}
@@ -1507,78 +1508,69 @@ function exportPDF(){
   pd.textContent=parts;
   document.title='Varuanalys'+(orig?' '+orig:'');
 
-  // Build descriptive product section title
-  var sortLabels={
-    'score':'Poäng','antal':'Antal sålda','forsv':'Försäljningsvärde',
-    'bv':'Bruttovinst','bvpct':'BV %','ff':'FYS','ffpct':'FYS %',
-    'marg':'Marginal kr','ben':'Produkt A→Ö'
-  };
-  var titleParts=['Produktlista'];
-  if(activeTier!=='all')titleParts.push('Nivå: '+activeTier);
-  if(selVoms.length)titleParts.push('VOM: '+selVoms.join(', '));
-  if(selKats.length)titleParts.push('KAT: '+selKats.join(', '));
-  titleParts.push('Sorterat: '+(sortLabels[sortField]||sortField)+' ('+(sortDir==='desc'?'hög→låg':'låg→hög')+')');
-  titleParts.push('('+cnt+')');
-  document.getElementById('prod-print-title').textContent=titleParts.join(' · ');
+  var katContainer=null;
+  var shown=[];
 
-  // Build per-KAT product tables for PDF
-  var filteredForPdf=allProducts.filter(function(p){
-    if(activeTier!=='all'&&p.tier!==activeTier)return false;
-    if(selVoms.length&&selVoms.indexOf(p.vom)===-1)return false;
-    if(selKats.length&&selKats.indexOf(p.kat)===-1)return false;
-    return true;
-  });
-  filteredForPdf.sort(function(a,b){
-    var va=a[sortField],vb=b[sortField];
-    if(typeof va==='string')return sortDir==='asc'?va.localeCompare(vb,'sv'):vb.localeCompare(va,'sv');
-    return sortDir==='asc'?va-vb:vb-va;
-  });
-  var katOrderP=[],katMapP={};
-  filteredForPdf.forEach(function(p){
-    var k=p.kat||'–';if(!katMapP[k]){katMapP[k]=[];katOrderP.push(k);}katMapP[k].push(p);
-  });
-  function fmtP2(n){return n===0?'–':n.toFixed(1)+'%'}
-  function fmt2(n){return n===0?'–':Math.round(n).toLocaleString('sv')}
-  var thRow='<thead><tr><th>BNR</th><th>EAN</th><th>Produkt</th><th>Producent</th><th style="text-align:right">Antal</th><th style="text-align:right">Förs.värde</th><th style="text-align:right">Marg kr</th><th style="text-align:right">Marg%</th><th style="text-align:right">FYS kr</th><th style="text-align:right">FF%</th><th style="text-align:right">BV kr</th><th style="text-align:right">BV%</th><th>Nivå</th><th style="text-align:right">Poäng</th></tr></thead>';
-  var katHtml=katOrderP.map(function(k){
-    var name=KAT_NAMES[k]||'';
-    var rows=katMapP[k].map(function(p){
-      var ffR=p.ffpct>0?p.ffpct:(p.forsv>0?p.ff/p.forsv*100:0);
-      return '<tr><td class="mc">'+p.bnr+'</td><td class="mc">'+p.ean+'</td>'+
-        '<td style="font-size:8px">'+p.ben+'</td><td style="font-size:7.5px;color:#666">'+p.vara+'</td>'+
-        '<td style="text-align:right">'+fmt2(p.antal)+'</td>'+
-        '<td style="text-align:right">'+fmt2(p.forsv)+'</td>'+
-        '<td style="text-align:right">'+fmt2(p.marg)+'</td>'+
-        '<td style="text-align:right">'+fmtP2(p.margpct)+'</td>'+
-        '<td style="text-align:right">'+fmt2(p.ff)+'</td>'+
-        '<td style="text-align:right">'+fmtP2(ffR)+'</td>'+
-        '<td style="text-align:right">'+fmt2(p.bv)+'</td>'+
-        '<td style="text-align:right">'+fmtP2(p.bvpct)+'</td>'+
-        '<td style="font-size:7px;font-weight:700">'+p.tier+'</td>'+
-        '<td style="text-align:right;color:#888">'+p.score+'</td></tr>';
+  // Always exclude weights view from PDF
+  var printView=currentView==='weights'?'products':currentView;
+
+  if(printView==='products'){
+    var sortLabels={'score':'Poäng','antal':'Antal sålda','forsv':'Försäljningsvärde','bv':'Bruttovinst','bvpct':'BV %','ff':'FYS','ffpct':'FYS %','marg':'Marginal kr','ben':'Produkt A→Ö'};
+    var titleParts=['Produktlista'];
+    if(activeTier!=='all')titleParts.push('Nivå: '+activeTier);
+    if(selVoms.length)titleParts.push('VOM: '+selVoms.join(', '));
+    if(selKats.length)titleParts.push('KAT: '+selKats.join(', '));
+    titleParts.push('Sorterat: '+(sortLabels[sortField]||sortField)+' ('+(sortDir==='desc'?'hög→låg':'låg→hög')+')');
+    titleParts.push('('+cnt+')');
+    document.getElementById('prod-print-title').textContent=titleParts.join(' · ');
+    // Build per-KAT tables
+    var filteredForPdf=allProducts.filter(function(p){
+      if(activeTier!=='all'&&p.tier!==activeTier)return false;
+      if(selVoms.length&&selVoms.indexOf(p.vom)===-1)return false;
+      if(selKats.length&&selKats.indexOf(p.kat)===-1)return false;
+      return true;
+    });
+    filteredForPdf.sort(function(a,b){var va=a[sortField],vb=b[sortField];if(typeof va==='string')return sortDir==='asc'?va.localeCompare(vb,'sv'):vb.localeCompare(va,'sv');return sortDir==='asc'?va-vb:vb-va;});
+    var katOrderP=[],katMapP={};
+    filteredForPdf.forEach(function(p){var k=p.kat||'–';if(!katMapP[k]){katMapP[k]=[];katOrderP.push(k);}katMapP[k].push(p);});
+    function fmtP2(n){return n===0?'–':n.toFixed(1)+'%'}
+    function fmt2(n){return n===0?'–':Math.round(n).toLocaleString('sv')}
+    var thRow='<thead><tr><th>BNR</th><th>EAN</th><th>Produkt</th><th>Producent</th><th style="text-align:right">Antal</th><th style="text-align:right">Förs.värde</th><th style="text-align:right">Marg kr</th><th style="text-align:right">Marg%</th><th style="text-align:right">FYS kr</th><th style="text-align:right">FYS%</th><th style="text-align:right">BV kr</th><th style="text-align:right">BV%</th><th>Nivå</th><th style="text-align:right">Poäng</th></tr></thead>';
+    var katHtml=katOrderP.map(function(k){
+      var name=KAT_NAMES[k]||'';
+      var rows=katMapP[k].map(function(p){
+        var ffR=p.ffpct>0?p.ffpct:(p.forsv>0?p.ff/p.forsv*100:0);
+        return '<tr><td class="mc">'+p.bnr+'</td><td class="mc">'+p.ean+'</td>'+
+          '<td style="font-size:8px">'+p.ben+'</td><td style="font-size:7.5px;color:#666">'+p.vara+'</td>'+
+          '<td style="text-align:right">'+fmt2(p.antal)+'</td>'+
+          '<td style="text-align:right">'+fmt2(p.forsv)+'</td>'+
+          '<td style="text-align:right">'+fmt2(p.marg)+'</td>'+
+          '<td style="text-align:right">'+fmtP2(p.margpct)+'</td>'+
+          '<td style="text-align:right">'+fmt2(p.ff)+'</td>'+
+          '<td style="text-align:right">'+fmtP2(ffR)+'</td>'+
+          '<td style="text-align:right">'+fmt2(p.bv)+'</td>'+
+          '<td style="text-align:right">'+fmtP2(p.bvpct)+'</td>'+
+          '<td style="font-size:7px;font-weight:700">'+p.tier+'</td>'+
+          '<td style="text-align:right;color:#888">'+p.score+'</td></tr>';
+      }).join('');
+      return '<div class="pdf-kat-section"><div class="pdf-kat-title">'+k+(name?' – '+name:'')+'</div><table>'+thRow+'<tbody>'+rows+'</tbody></table></div>';
     }).join('');
-    return '<div class="pdf-kat-section"><div class="pdf-kat-title">'+k+(name?' – '+name:'')+'</div><table>'+thRow+'<tbody>'+rows+'</tbody></table></div>';
-  }).join('');
-  var katContainer=document.createElement('div');
-  katContainer.id='pdf-kat-container';
-  katContainer.innerHTML=katHtml;
-  document.querySelector('.main').appendChild(katContainer);
+    katContainer=document.createElement('div');
+    katContainer.id='pdf-kat-container';
+    katContainer.innerHTML=katHtml;
+    document.querySelector('.main').appendChild(katContainer);
+  } else if(printView==='vom'||printView==='kat'||printView==='movers'||printView==='svinn'||printView==='katcomp'){
+    var el=document.getElementById('view-'+printView);
+    el.classList.add('print-visible');
+    shown.push(el);
+  }
 
-
-  // Show all sections for print
-  var prodEl=document.getElementById('view-products');
-  var vomEl=document.getElementById('view-vom');
-  var katEl=document.getElementById('view-kat');
-  var prevProd=prodEl.style.display, prevVom=vomEl.classList.contains('visible'), prevKat=katEl.classList.contains('visible');
-  vomEl.classList.add('visible');
-  katEl.classList.add('visible');
   window.print();
   setTimeout(function(){
     pd.textContent=orig;
     document.getElementById('prod-print-title').textContent='Produktlista';
-    if(!prevVom)vomEl.classList.remove('visible');
-    if(!prevKat)katEl.classList.remove('visible');
-    var c=document.getElementById('pdf-kat-container');if(c)c.remove();
+    shown.forEach(function(el){el.classList.remove('print-visible')});
+    if(katContainer)katContainer.remove();
     setView(currentView);
   },500);
 }
