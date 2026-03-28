@@ -39,6 +39,7 @@ function resetApp(){
   allProducts=[];activeTier='all';sortField='score';sortDir='desc';fileName='';highlightMode=false;currentView='products';sumSortState={};
   document.getElementById('dashboard').style.display='none';
   document.getElementById('upload-screen').style.display='flex';
+  document.getElementById('theme-toggle-upload').style.display='';
   document.getElementById('file-input').value='';
   document.getElementById('search').value='';
   document.getElementById('sort-sel').value='score|desc';
