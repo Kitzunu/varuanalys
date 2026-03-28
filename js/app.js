@@ -24,11 +24,28 @@ document.addEventListener('click',function(e){
   if(!e.target.closest('.multi-drop')){
     document.querySelectorAll('.multi-menu.open').forEach(function(m){m.classList.remove('open')});
   }
+  if(!e.target.closest('.global-search-wrap')){
+    var gs=document.getElementById('global-search-results');
+    if(gs)gs.classList.remove('open');
+  }
 });
 
 // Debounced search
 var st;
 document.getElementById('search').addEventListener('input',function(){clearTimeout(st);st=setTimeout(renderTable,150)});
+
+// Global search keyboard shortcuts
+document.getElementById('global-search').addEventListener('keydown',function(e){
+  if(e.key==='Escape'){
+    this.value='';
+    document.getElementById('global-search-results').classList.remove('open');
+    this.blur();
+  }
+  if(e.key==='Enter'){
+    var first=document.querySelector('.gs-item');
+    if(first)first.click();
+  }
+});
 
 // Responsive table height
 window.addEventListener('resize',setTableHeight);
@@ -113,6 +130,7 @@ function resetApp(){
   buildTabs();
   renderTable();
   buildSummaries();
+  buildAlerts();
   setView(currentView);
   requestAnimationFrame(setTableHeight);
 })();

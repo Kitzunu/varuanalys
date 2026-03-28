@@ -63,16 +63,16 @@ function setTier(t){activeTier=t;buildTabs();renderTable();saveSession()}
 function setView(v){
   if(v==='weights')v='settings';
   currentView=v;
-  var views=['products','vom','kat','movers','svinn','katcomp','charts'];
+  var views=['products','vom','kat','movers','svinn','katcomp','charts','alerts'];
   document.querySelectorAll('.view-tab').forEach(function(t,i){
     t.classList.toggle('active',views[i]===v);
   });
   document.getElementById('view-products').style.display=v==='products'?'block':'none';
-  ['vom','kat','movers','svinn','katcomp','settings','charts'].forEach(function(k){
+  ['vom','kat','movers','svinn','katcomp','settings','charts','alerts'].forEach(function(k){
     var el=document.getElementById('view-'+k);
     if(!el)return;
     el.classList.toggle('visible',v===k);
-    if(v===k){requestAnimationFrame(setTableHeight);if(k==='movers')buildMovers();if(k==='svinn')buildSvinn();if(k==='katcomp')buildKatComp();if(k==='charts')buildCharts();}
+    if(v===k){requestAnimationFrame(setTableHeight);if(k==='movers')buildMovers();if(k==='svinn')buildSvinn();if(k==='katcomp')buildKatComp();if(k==='charts')buildCharts();if(k==='alerts')buildAlerts();}
   });
   if(allProducts.length)saveSession();
 }
@@ -140,7 +140,8 @@ function renderPageRows(){
   var end=pageSize===0?filteredProducts.length:Math.min(start+pageSize,filteredProducts.length);
   var page=filteredProducts.slice(start,end);
   var T=getThresholds();
-  tb.innerHTML=page.map(function(p){
+  tb.innerHTML=page.map(function(p,pi){
+    var globalIdx=start+pi;
     var bw=Math.round(p.score*.55);
     var bvC=p.bv<0?'cr':p.bv>=T.bvGreenKr?'cg':'';
     var ffRatioDisp=p.ffpct>0?p.ffpct:(p.forsv>0?p.ff/p.forsv*100:0);
@@ -150,7 +151,7 @@ function renderPageRows(){
     var isRem=isExcludedTier(p.tier);
     var hlC=highlightMode?' '+TIER_HL[p.tier]:'';
     var remC=(!highlightMode&&isRem)?'tr-remove':'';
-    return '<tr class="'+remC+hlC+'">'+
+    return '<tr class="'+remC+hlC+'" onclick="openProductModal('+globalIdx+')">'+
       '<td class="mc">'+(p.vom||'–')+(VOM_NAMES[p.vom]?'<span class="mc-name">'+VOM_NAMES[p.vom]+'</span>':'')+'</td>'+
       '<td class="mc">'+(p.kat||'–')+(KAT_NAMES[p.kat]?'<span class="mc-name">'+KAT_NAMES[p.kat]+'</span>':'')+'</td>'+
       '<td class="mc">'+(p.ean||'–')+'</td>'+
@@ -271,6 +272,73 @@ function toggleDrop(dropId){
   if(!isOpen)menu.classList.add('open');
 }
 
+/* Product detail modal */
+
+function openProductModal(idx){
+  var p=filteredProducts[idx];
+  if(!p)return;
+  var T=getThresholds();
+  function fmt(n){return Math.round(n).toLocaleString('sv')}
+  function fmtP(n){return n.toFixed(1)+'%'}
+  var mpC=p.margpct>=T.margGreen?'var(--grn)':p.margpct>=T.margAmber?'var(--amb)':'var(--red)';
+  var ffR=p.ffpct>0?p.ffpct:(p.forsv>0?p.ff/p.forsv*100:0);
+  var ffC=ffR>=T.fysRed?'var(--red)':'var(--mut)';
+  var bvC=p.bv<0?'var(--red)':p.bv>=T.bvGreenKr?'var(--grn)':'var(--txt)';
+
+  // Find rank within category
+  var katPeers=allProducts.filter(function(x){return x.kat===p.kat&&!isExcludedTier(x.tier)});
+  katPeers.sort(function(a,b){return b.score-a.score});
+  var rank=katPeers.indexOf(p)+1;
+  if(rank===0)rank=katPeers.findIndex(function(x){return x.ean===p.ean&&x.bnr===p.bnr})+1;
+
+  var bd=p.breakdown;
+  var maxBd=bd?Math.max(bd.vol,bd.marg,bd.margpct,bd.svinn,bd.bv,1):1;
+
+  var html='<div class="modal-title">'+(p.ben||'–')+'</div>'+
+    '<div class="modal-sub">'+(p.vara||'–')+' · EAN: '+(p.ean||'–')+' · BNR: '+(p.bnr||'–')+'</div>'+
+    '<div style="display:flex;gap:8px;align-items:center;margin-bottom:16px">'+
+      '<span class="badge '+TIER_BADGE[p.tier]+'">'+p.tier+'</span>'+
+      '<span style="font-family:var(--mono);font-size:13px;font-weight:700">'+p.score+' poäng</span>'+
+      (rank?'<span class="modal-rank" style="color:var(--mut)">Rank <strong style="color:var(--txt)">#'+rank+'</strong> av '+katPeers.length+' i KAT '+(p.kat||'–')+(KAT_NAMES[p.kat]?' – '+KAT_NAMES[p.kat]:'')+'</span>':'')+
+    '</div>'+
+    '<div class="modal-grid">'+
+      '<div class="modal-stat"><div class="modal-stat-label">Antal sålda</div><div class="modal-stat-value">'+fmt(p.antal)+'</div></div>'+
+      '<div class="modal-stat"><div class="modal-stat-label">Försäljningsvärde</div><div class="modal-stat-value" style="color:var(--acc2)">'+fmt(p.forsv)+' kr</div></div>'+
+      '<div class="modal-stat"><div class="modal-stat-label">Marginal kr</div><div class="modal-stat-value">'+fmt(p.marg)+' kr</div></div>'+
+      '<div class="modal-stat"><div class="modal-stat-label">Marginal %</div><div class="modal-stat-value" style="color:'+mpC+'">'+fmtP(p.margpct)+'</div></div>'+
+      '<div class="modal-stat"><div class="modal-stat-label">FYS kr</div><div class="modal-stat-value" style="color:'+ffC+'">'+(p.ff>0?fmt(p.ff)+' kr':'–')+'</div></div>'+
+      '<div class="modal-stat"><div class="modal-stat-label">FYS %</div><div class="modal-stat-value" style="color:'+ffC+'">'+(ffR>0?fmtP(ffR):'–')+'</div></div>'+
+      '<div class="modal-stat"><div class="modal-stat-label">Bruttovinst</div><div class="modal-stat-value" style="color:'+bvC+'">'+fmt(p.bv)+' kr</div></div>'+
+      '<div class="modal-stat"><div class="modal-stat-label">BV %</div><div class="modal-stat-value">'+fmtP(p.bvpct)+'</div></div>'+
+    '</div>'+
+    '<div style="font-size:11px;color:var(--mut)">VOM: '+(p.vom||'–')+(VOM_NAMES[p.vom]?' – '+VOM_NAMES[p.vom]:'')+' · KAT: '+(p.kat||'–')+(KAT_NAMES[p.kat]?' – '+KAT_NAMES[p.kat]:'')+'</div>';
+
+  if(bd){
+    var bars=[
+      {label:'Volym',val:bd.vol,color:'var(--acc)'},
+      {label:'Marginal kr',val:bd.marg,color:'var(--grn)'},
+      {label:'Marginal %',val:bd.margpct,color:'var(--acc2)'},
+      {label:'Svinnstraff',val:bd.svinn,color:'var(--amb)'},
+      {label:'Bruttovinst',val:bd.bv,color:'var(--grn)'}
+    ];
+    html+='<div class="modal-section">Poängfördelning</div>';
+    bars.forEach(function(b){
+      var w=maxBd>0?Math.round(b.val/maxBd*100):0;
+      html+='<div class="modal-bar-row">'+
+        '<span class="modal-bar-label">'+b.label+'</span>'+
+        '<div class="modal-bar-wrap"><div class="modal-bar-fill" style="width:'+w+'%;background:'+b.color+'"></div></div>'+
+        '<span class="modal-bar-val">'+b.val+'</span></div>';
+    });
+  }
+
+  document.getElementById('modal-content').innerHTML=html;
+  document.getElementById('product-modal').classList.add('open');
+}
+
+function closeModal(){
+  document.getElementById('product-modal').classList.remove('open');
+}
+
 /* Help tooltips */
 
 (function(){
@@ -335,3 +403,80 @@ function showScoreTip(e,el){
 }
 
 function hideTip(){document.getElementById('score-tooltip').style.display='none'}
+
+/* Global search across views */
+
+var gsTimer;
+function onGlobalSearch(){
+  clearTimeout(gsTimer);
+  gsTimer=setTimeout(renderGlobalSearch,120);
+}
+
+function renderGlobalSearch(){
+  var q=(document.getElementById('global-search').value||'').toLowerCase().trim();
+  var res=document.getElementById('global-search-results');
+  if(!q||q.length<2||!allProducts.length){
+    res.classList.remove('open');
+    if(q.length===1)res.innerHTML='<div class="gs-hint">Skriv minst 2 tecken...</div>';
+    if(q.length===1){res.classList.add('open')}
+    return;
+  }
+  var matches=allProducts.filter(function(p){
+    return (p.ben&&p.ben.toLowerCase().indexOf(q)!==-1)||
+           (p.vara&&p.vara.toLowerCase().indexOf(q)!==-1)||
+           (p.ean&&p.ean.indexOf(q)!==-1)||
+           (p.bnr&&p.bnr.indexOf(q)!==-1);
+  }).slice(0,25);
+
+  if(!matches.length){
+    res.innerHTML='<div class="gs-empty">Inga produkter matchar s\u00f6kningen</div>';
+    res.classList.add('open');
+    return;
+  }
+
+  function fmt(n){return Math.round(n).toLocaleString('sv')}
+  var T=getThresholds();
+  res.innerHTML=matches.map(function(p){
+    var idx=allProducts.indexOf(p);
+    var mpC=p.margpct>=T.margGreen?'cg':p.margpct>=T.margAmber?'ca':p.margpct>0?'cr':'';
+    return '<div class="gs-item" onclick="globalSearchSelect('+idx+')">'+
+      '<span class="badge '+TIER_BADGE[p.tier]+'" style="font-size:8px;flex-shrink:0">'+p.tier+'</span>'+
+      '<div class="gs-item-info">'+
+        '<div class="gs-item-name">'+(p.ben||'\u2013')+'</div>'+
+        '<div class="gs-item-meta">EAN: '+(p.ean||'\u2013')+' \u00b7 BNR: '+(p.bnr||'\u2013')+' \u00b7 KAT '+(p.kat||'\u2013')+(KAT_NAMES[p.kat]?' \u2013 '+KAT_NAMES[p.kat]:'')+'</div>'+
+      '</div>'+
+      '<div class="gs-item-stats">'+
+        '<div>'+fmt(p.antal)+' st</div>'+
+        '<div class="'+mpC+'">'+p.margpct.toFixed(1)+'%</div>'+
+      '</div>'+
+    '</div>';
+  }).join('')+
+  (matches.length>=25?'<div class="gs-hint">Visar max 25 tr\u00e4ffar \u2013 f\u00f6rfina s\u00f6kningen</div>':'');
+  res.classList.add('open');
+}
+
+function globalSearchSelect(idx){
+  document.getElementById('global-search').value='';
+  document.getElementById('global-search-results').classList.remove('open');
+  // Set filteredProducts to allProducts temporarily so modal can find the product
+  var p=allProducts[idx];
+  if(!p)return;
+  filteredProducts=allProducts;
+  openProductModal(idx);
+}
+
+/* Collapsible legend */
+
+function toggleLegend(){
+  var c=document.getElementById('legend-container');
+  c.classList.toggle('open');
+  try{localStorage.setItem('va-legend-open',c.classList.contains('open')?'1':'0')}catch(e){}
+}
+
+(function restoreLegend(){
+  var state=localStorage.getItem('va-legend-open');
+  // Default to collapsed
+  if(state==='1'){
+    document.getElementById('legend-container').classList.add('open');
+  }
+})()

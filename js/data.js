@@ -136,7 +136,7 @@ function processData(rows){
   buildMultiMenu('kat-menu','kat-label',kats,'Alla KAT');
   document.getElementById('period-disp').textContent=period;
 
-  showDash();buildMetrics();buildTabs();renderTable();buildSummaries();
+  showDash();buildMetrics();buildTabs();renderTable();buildSummaries();buildAlerts();
   requestAnimationFrame(setTableHeight);
   saveSession();
 }
@@ -157,7 +157,10 @@ function updateWeightsLegend(){
   var mp=document.getElementById('w-margpct').value||0;
   var s=document.getElementById('w-svinn').value||0;
   var b=document.getElementById('w-bv').value||0;
-  document.getElementById('legend-weights').textContent='Volym '+v+'% · Marginal kr '+m+'% · Marginal % '+mp+'% · Svinnstraff '+s+'% · Bruttovinst '+b+'%';
+  var txt='Volym '+v+'% \u00b7 Marginal kr '+m+'% \u00b7 Marginal % '+mp+'% \u00b7 Svinnstraff '+s+'% \u00b7 Bruttovinst '+b+'%';
+  document.getElementById('legend-weights').textContent=txt;
+  var full=document.getElementById('legend-weights-full');
+  if(full)full.textContent=txt;
 }
 
 function updateWeights(){
@@ -204,7 +207,7 @@ function rescoreAndRender(){
     var n=g.length;
     g.forEach(function(p,i){var pct=(i+1)/n;p.tier=pct<=.10?'Prioritet':pct<=.40?'Bra':pct<=.80?'Genomsnittlig':'Låg'});
   });
-  buildMetrics();buildTabs();renderTable();buildSummaries();
+  buildMetrics();buildTabs();renderTable();buildSummaries();buildAlerts();
   saveSession();
 }
 
@@ -228,6 +231,7 @@ function updateThreshold(key,val){
   if(currentView==='movers')buildMovers();
   if(currentView==='svinn')buildSvinn();
   if(currentView==='katcomp')buildKatComp();
+  buildAlerts();
   saveSession();
 }
 

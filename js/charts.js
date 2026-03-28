@@ -10,13 +10,117 @@ function buildCharts(){
   // Defer briefly so container is visible and has layout dimensions
   setTimeout(function(){
     var type=document.getElementById('chart-type-sel').value;
-    if(type==='scatter')buildScatterChart();
+    if(type==='quadrant')buildQuadrantChart();
+    else if(type==='scatter')buildScatterChart();
     else if(type==='katbar')buildKatBarChart();
     else if(type==='vombar')buildVomBarChart();
     else if(type==='tier')buildTierChart();
     // Force resize after creation
     if(mainChart)mainChart.resize();
   },50);
+}
+
+/* Quadrant: Margin % vs Volume with threshold lines and labeled quadrants */
+function buildQuadrantChart(){
+  destroyChart();
+  var T=getThresholds();
+  var active=allProducts.filter(function(p){return p.antal>0&&!isExcludedTier(p.tier)});
+  var medianAntal=active.slice().sort(function(a,b){return a.antal-b.antal});
+  var volCut=medianAntal.length?medianAntal[Math.floor(medianAntal.length*.5)].antal:10;
+  var margCut=T.margGreen;
+
+  var MAX_POINTS=2000;
+  if(active.length>MAX_POINTS){
+    active.sort(function(a,b){return b.score-a.score});
+    var step=active.length/MAX_POINTS;var sampled=[];
+    for(var i=0;i<active.length&&sampled.length<MAX_POINTS;i+=step)sampled.push(active[Math.floor(i)]);
+    active=sampled;
+  }
+
+  var quads={
+    'Stjärnor':{data:[],color:'#c8f060',desc:'Hög volym + hög marginal'},
+    'Potential':{data:[],color:'#f0b860',desc:'Hög volym + låg marginal'},
+    'Dolda pärlor':{data:[],color:'#60d4f0',desc:'Låg volym + hög marginal'},
+    'Underpresterare':{data:[],color:'#f06060',desc:'Låg volym + låg marginal'}
+  };
+  active.forEach(function(p){
+    var pt={x:p.antal,y:p.margpct,ben:p.ben,kat:p.kat,bv:p.bv,tier:p.tier,score:p.score};
+    if(p.antal>=volCut&&p.margpct>=margCut)quads['Stjärnor'].data.push(pt);
+    else if(p.antal>=volCut)quads['Potential'].data.push(pt);
+    else if(p.margpct>=margCut)quads['Dolda pärlor'].data.push(pt);
+    else quads['Underpresterare'].data.push(pt);
+  });
+
+  var datasets=Object.keys(quads).map(function(k){
+    var q=quads[k];
+    return{label:k+' ('+q.data.length+')',data:q.data,backgroundColor:q.color+'cc',pointRadius:4,pointHoverRadius:6};
+  });
+
+  // Quadrant line plugin
+  var quadPlugin={
+    id:'quadrantLines',
+    afterDraw:function(chart){
+      var ctx=chart.ctx;
+      var xAxis=chart.scales.x;
+      var yAxis=chart.scales.y;
+      var xPx=xAxis.getPixelForValue(volCut);
+      var yPx=yAxis.getPixelForValue(margCut);
+
+      ctx.save();
+      ctx.setLineDash([6,4]);
+      ctx.lineWidth=1.5;
+      ctx.strokeStyle='rgba(255,255,255,0.25)';
+      // Vertical line (volume cutoff)
+      ctx.beginPath();ctx.moveTo(xPx,yAxis.top);ctx.lineTo(xPx,yAxis.bottom);ctx.stroke();
+      // Horizontal line (margin cutoff)
+      ctx.beginPath();ctx.moveTo(xAxis.left,yPx);ctx.lineTo(xAxis.right,yPx);ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Quadrant labels
+      ctx.font='600 10px Syne,sans-serif';
+      ctx.globalAlpha=0.35;
+      var pad=8;
+      ctx.fillStyle='#c8f060';ctx.textAlign='right';ctx.fillText('★ STJÄRNOR',xAxis.right-pad,yAxis.top+16);
+      ctx.fillStyle='#f0b860';ctx.textAlign='right';ctx.fillText('↑ POTENTIAL',xAxis.right-pad,yPx+16);
+      ctx.fillStyle='#60d4f0';ctx.textAlign='left';ctx.fillText('◆ DOLDA PÄRLOR',xAxis.left+pad,yAxis.top+16);
+      ctx.fillStyle='#f06060';ctx.textAlign='left';ctx.fillText('↓ UNDERPRESTERARE',xAxis.left+pad,yPx+16);
+      ctx.globalAlpha=1;
+      ctx.restore();
+    }
+  };
+
+  var ctx=document.getElementById('main-chart').getContext('2d');
+  mainChart=new Chart(ctx,{
+    type:'scatter',
+    data:{datasets:datasets},
+    plugins:[quadPlugin],
+    options:{
+      responsive:true,maintainAspectRatio:false,animation:false,
+      plugins:{
+        legend:{position:'top',labels:{color:'#e8e6df',font:{family:'DM Sans',size:11},boxWidth:12,padding:16}},
+        tooltip:{
+          backgroundColor:'#1f1f1e',borderColor:'rgba(255,255,255,0.14)',borderWidth:1,
+          titleColor:'#e8e6df',bodyColor:'#e8e6df',
+          titleFont:{family:'Syne',weight:'bold'},bodyFont:{family:'DM Sans',size:11},padding:10,
+          callbacks:{
+            title:function(items){return items[0].raw.ben},
+            label:function(item){
+              var d=item.raw;
+              return ['KAT: '+d.kat+(KAT_NAMES[d.kat]?' – '+KAT_NAMES[d.kat]:''),
+                'Antal: '+d.x.toLocaleString('sv'),'Marg %: '+d.y.toFixed(1)+'%',
+                'BV: '+Math.round(d.bv).toLocaleString('sv')+' kr','Poäng: '+d.score];
+            }
+          }
+        }
+      },
+      scales:{
+        x:{title:{display:true,text:'Antal sålda (median: '+volCut+')',color:'#7a7870',font:{family:'DM Sans',size:12}},
+          ticks:{color:'#7a7870',font:{family:'DM Mono',size:10}},grid:{color:'rgba(255,255,255,0.06)'}},
+        y:{title:{display:true,text:'Marginal % (gräns: '+margCut+'%)',color:'#7a7870',font:{family:'DM Sans',size:12}},
+          ticks:{color:'#7a7870',font:{family:'DM Mono',size:10},callback:function(v){return v+'%'}},grid:{color:'rgba(255,255,255,0.06)'}}
+      }
+    }
+  });
 }
 
 /* Scatter: Margin % vs Volume, colored by tier */
@@ -107,7 +211,8 @@ function buildKatBarChart(){
 
   var labels=sorted.map(function(d){return d.kat+(KAT_NAMES[d.kat]?' '+KAT_NAMES[d.kat]:'')});
   var values=sorted.map(function(d){return Math.round(d.bv)});
-  var colors=sorted.map(function(d){return d.margPct>32?'#60d4a0':d.margPct>30?'#f0b860':'#f06060'});
+  var T=getThresholds();
+  var colors=sorted.map(function(d){return d.margPct>=T.margGreen?'#60d4a0':d.margPct>=T.margAmber?'#f0b860':'#f06060'});
 
   var ctx=document.getElementById('main-chart').getContext('2d');
   mainChart=new Chart(ctx,{
@@ -157,6 +262,7 @@ function buildKatBarChart(){
 /* Horizontal bar: VOM by Bruttovinst */
 function buildVomBarChart(){
   destroyChart();
+  var T=getThresholds();
   var vomG={};
   allProducts.forEach(function(p){
     if(!p.vom)return;
@@ -170,7 +276,7 @@ function buildVomBarChart(){
 
   var labels=sorted.map(function(d){return d.vom+(VOM_NAMES[d.vom]?' '+VOM_NAMES[d.vom]:'')});
   var values=sorted.map(function(d){return Math.round(d.bv)});
-  var colors=sorted.map(function(d){return d.margPct>32?'#60d4a0':d.margPct>30?'#f0b860':'#f06060'});
+  var colors=sorted.map(function(d){return d.margPct>=T.margGreen?'#60d4a0':d.margPct>=T.margAmber?'#f0b860':'#f06060'});
 
   var ctx=document.getElementById('main-chart').getContext('2d');
   mainChart=new Chart(ctx,{

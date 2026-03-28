@@ -8,7 +8,7 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-<link rel="stylesheet" href="css/style.css?v=20260328">
+<link rel="stylesheet" href="css/style.css?v=20260328c">
 </head>
 <body>
 
@@ -43,6 +43,10 @@
       <div class="topbar-period" id="period-disp"></div>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
+      <div class="global-search-wrap" id="global-search-wrap">
+        <input class="global-search-input" type="text" id="global-search" placeholder="Sök produkt, EAN, BNR..." oninput="onGlobalSearch()" onfocus="onGlobalSearch()" data-tip="Sök produkter oavsett vilken vy du befinner dig i">
+        <div class="global-search-results" id="global-search-results"></div>
+      </div>
       <button class="btn-new btn-hl" id="hl-btn" onclick="toggleHighlight()" data-tip="Färgmarkera rader efter nivå – gör det lättare att visuellt skilja grupper åt">◐ Highlight</button>
       <button class="btn-new" onclick="setView('settings')" data-tip="Vikter, tröskelvärden och färgkodning">⚙ Inställningar</button>
       <button class="btn-new" id="theme-toggle-dash" onclick="toggleTheme()" data-tip="Växla mellan mörkt och ljust tema">☀ Ljust</button>
@@ -57,25 +61,31 @@
     <div class="warn-box" id="col-warning" style="display:none"></div>
     <div class="metrics-grid" id="metrics-grid"></div>
 
-    <div>
-      <div class="legend">
-        <span style="font-family:var(--disp);font-size:11px;font-weight:600;color:var(--txt)">Poängmodell:</span>
-        <span id="legend-weights">Volym 40% · Marginal kr 20% · Marginal % 15% · Svinnstraff 10% · Bruttovinst 15%</span>
-        <span style="color:var(--brd2)">|</span>
-        <span title="Rangordnas relativt inom KAT. Topp 10% = Prioritet, 11–40% = Bra, 41–80% = Genomsnittlig, botten 20% = Låg">Poängsättning baseras på artiklar ur samma kategori</span>
+    <div class="legend-container" id="legend-container">
+      <div class="legend legend-header" onclick="toggleLegend()" style="cursor:pointer;user-select:none">
+        <span style="font-family:var(--disp);font-size:11px;font-weight:600;color:var(--txt);display:flex;align-items:center;gap:6px"><span class="legend-chevron" id="legend-chevron">▾</span> Po\u00e4ngmodell &amp; Grupper</span>
+        <span id="legend-weights" style="font-size:11px;color:var(--mut)">Volym 40% · Marginal kr 20% · Marginal % 15% · Svinnstraff 10% · Bruttovinst 15%</span>
       </div>
-      <div class="legend">
-        <span style="font-family:var(--disp);font-size:11px;font-weight:600;color:var(--txt)">Grupper:</span>
-        <span><span class="legend-dot" style="background:var(--acc)"></span>Prioritet (topp 10%)</span>
-        <span><span class="legend-dot" style="background:var(--acc2)"></span>Bra (11–40%)</span>
-        <span><span class="legend-dot" style="background:#888"></span>Genomsnittlig (41–80%)</span>
-        <span><span class="legend-dot" style="background:var(--amb)"></span>Låg (botten 20%)</span>
-        <span><span class="legend-dot" style="background:var(--red)"></span>Ta bort</span>
-        <span><span class="legend-dot" style="background:var(--red)"></span>Systemfel</span>
-        <span title="Kategorier som exkluderas från överiga grupper"><span class="legend-dot" style="background:var(--red)"></span>Ignorerad (KAT 248 / 276 / 334 / 335 / 337 / 338 / 352)</span>
-        <span title="Cigaretter / Snus exkluderas från övriga grupper"><span class="legend-dot" style="background:var(--red)"></span>Tobak (KAT 344 / 345)</span>
-        <span title="BNR = KAT"><span class="legend-dot" style="background:var(--red)"></span>Kategoriförsäljning</span>
-        <span title="Artiklar med marginal ≥99% exkluderas från övriga grupper"><span class="legend-dot" style="background:var(--red)"></span>Marg 99%</span>
+      <div class="legend-body" id="legend-body">
+        <div class="legend">
+          <span style="font-family:var(--disp);font-size:11px;font-weight:600;color:var(--txt)">Po\u00e4ngmodell:</span>
+          <span id="legend-weights-full">Volym 40% · Marginal kr 20% · Marginal % 15% · Svinnstraff 10% · Bruttovinst 15%</span>
+          <span style="color:var(--brd2)">|</span>
+          <span title="Rangordnas relativt inom KAT. Topp 10% = Prioritet, 11\u201340% = Bra, 41\u201380% = Genomsnittlig, botten 20% = L\u00e5g">Po\u00e4ngs\u00e4ttning baseras p\u00e5 artiklar ur samma kategori</span>
+        </div>
+        <div class="legend">
+          <span style="font-family:var(--disp);font-size:11px;font-weight:600;color:var(--txt)">Grupper:</span>
+          <span><span class="legend-dot" style="background:var(--acc)"></span>Prioritet (topp 10%)</span>
+          <span><span class="legend-dot" style="background:var(--acc2)"></span>Bra (11\u201340%)</span>
+          <span><span class="legend-dot" style="background:#888"></span>Genomsnittlig (41\u201380%)</span>
+          <span><span class="legend-dot" style="background:var(--amb)"></span>L\u00e5g (botten 20%)</span>
+          <span><span class="legend-dot" style="background:var(--red)"></span>Ta bort</span>
+          <span><span class="legend-dot" style="background:var(--red)"></span>Systemfel</span>
+          <span title="Kategorier som exkluderas fr\u00e5n \u00f6veriga grupper"><span class="legend-dot" style="background:var(--red)"></span>Ignorerad (KAT 248 / 276 / 334 / 335 / 337 / 338 / 352)</span>
+          <span title="Cigaretter / Snus exkluderas fr\u00e5n \u00f6vriga grupper"><span class="legend-dot" style="background:var(--red)"></span>Tobak (KAT 344 / 345)</span>
+          <span title="BNR = KAT"><span class="legend-dot" style="background:var(--red)"></span>Kategoriförsäljning</span>
+          <span title="Artiklar med marginal \u226599% exkluderas fr\u00e5n \u00f6vriga grupper"><span class="legend-dot" style="background:var(--red)"></span>Marg 99%</span>
+        </div>
       </div>
     </div>
 
@@ -87,6 +97,18 @@
       <button class="view-tab" onclick="setView('svinn')" data-tip="Produkter med hög fysisk förlust (FYS) som bör ses över">Svinn watchlist</button>
       <button class="view-tab" onclick="setView('katcomp')" data-tip="Jämför nyckeltal mellan kategorier sida vid sida">KAT jämförelse</button>
       <button class="view-tab" onclick="setView('charts')" data-tip="Visuella diagram över försäljning, marginaler och fördelning">Diagram</button>
+      <button class="view-tab" onclick="setView('alerts')" data-tip="Automatiskt upptäckta varningar och avvikelser">⚠ Varningar <span class="alert-count" id="alert-count-tab" style="display:none"></span></button>
+    </div>
+
+    <!-- Alerts view -->
+    <div id="view-alerts" class="summary-section">
+      <div class="print-section-title">Varningar &amp; avvikelser</div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;background:var(--surf);border:1px solid var(--brd);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:12px">
+        <span style="font-family:var(--disp);font-size:12px;font-weight:600;color:var(--txt)">Automatisk analys</span>
+        <span style="color:var(--mut)">Systemet identifierar produkter med avvikande mönster baserat på dina inställningar.</span>
+      </div>
+      <div id="alerts-container"></div>
+      <div id="alerts-empty" style="display:none;text-align:center;padding:48px;color:var(--mut);font-size:14px">Inga varningar hittades – alla produkter ser bra ut! ✓</div>
     </div>
 
     <!-- Charts view -->
@@ -95,7 +117,8 @@
       <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;background:var(--surf);border:1px solid var(--brd);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:12px">
         <span style="font-family:var(--disp);font-size:12px;font-weight:600;color:var(--txt)">Visa</span>
         <select class="filter-select" id="chart-type-sel" onchange="buildCharts()">
-          <option value="scatter">Marginal % vs Volym</option>
+          <option value="quadrant">Kvadrant: Marginal % vs Volym</option>
+          <option value="scatter">Scatter: Marginal % vs Volym</option>
           <option value="katbar">Bruttovinst per KAT (topp 15)</option>
           <option value="vombar">Bruttovinst per VOM</option>
           <option value="tier">Fördelning per nivå</option>
@@ -480,6 +503,13 @@
 </div>
 
 <div id="help-tip"><div class="ht-title"></div><div class="ht-body"></div></div>
+<div class="modal-overlay" id="product-modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
 <div id="score-tooltip">
   <div class="tt-title">Poängfördelning</div>
   <div class="tt-row"><span class="tt-label">Volym (40%)</span><span class="tt-val" id="tt-vol">–</span></div>
@@ -491,12 +521,12 @@
 </div>
 
 <!-- Scripts loaded in dependency order -->
-<script src="js/constants.js?v=20260328"></script>
-<script src="js/data.js?v=20260328"></script>
-<script src="js/ui.js?v=20260328"></script>
-<script src="js/views.js?v=20260328"></script>
-<script src="js/export.js?v=20260328"></script>
-<script src="js/charts.js?v=20260328"></script>
-<script src="js/app.js?v=20260328"></script>
+<script src="js/constants.js?v=20260328c"></script>
+<script src="js/data.js?v=20260328c"></script>
+<script src="js/ui.js?v=20260328c"></script>
+<script src="js/views.js?v=20260328c"></script>
+<script src="js/export.js?v=20260328c"></script>
+<script src="js/charts.js?v=20260328c"></script>
+<script src="js/app.js?v=20260328c"></script>
 </body>
 </html>

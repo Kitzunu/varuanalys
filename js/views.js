@@ -351,3 +351,115 @@ function buildKatComp(chosenKat){
   }).join('');
   requestAnimationFrame(setTableHeight);
 }
+
+/* Alerts / Warnings system */
+
+function buildAlerts(){
+  var T=getThresholds();
+  var active=allProducts.filter(function(p){return !isExcludedTier(p.tier)&&p.antal>0});
+  var groups=[];
+
+  // 1. Negative margin products
+  var negMarg=active.filter(function(p){return p.margpct<0}).sort(function(a,b){return a.margpct-b.margpct}).slice(0,20);
+  if(negMarg.length){
+    groups.push({title:'Negativ marginal',icon:'\ud83d\udd34',
+      desc:'Produkter med negativ marginal \u2013 varje s\u00e5lt exemplar ger f\u00f6rlust.',severity:'danger',
+      items:negMarg.map(function(p){return {product:p,detail:'Marg: <strong>'+p.margpct.toFixed(1)+'%</strong> \u00b7 Marg kr: <strong>'+Math.round(p.marg).toLocaleString('sv')+' kr</strong> \u00b7 Antal: <strong>'+p.antal.toLocaleString('sv')+'</strong>'}})
+    });
+  }
+
+  // 2. Negative BV (positive margin eaten by FYS)
+  var negBv=active.filter(function(p){return p.bv<0&&p.antal>=5&&p.margpct>=0}).sort(function(a,b){return a.bv-b.bv}).slice(0,20);
+  if(negBv.length){
+    groups.push({title:'Negativ bruttovinst',icon:'\ud83d\udcb8',
+      desc:'Produkter med negativ bruttovinst (marginal minus FYS) \u2014 kostar butiken pengar.',severity:'danger',
+      items:negBv.map(function(p){return {product:p,detail:'BV: <strong>'+Math.round(p.bv).toLocaleString('sv')+' kr</strong> \u00b7 Marg: <strong>'+p.margpct.toFixed(1)+'%</strong> \u00b7 FYS: <strong>'+Math.round(p.ff).toLocaleString('sv')+' kr</strong>'}})
+    });
+  }
+
+  // 3. High svinn on popular products
+  var highSvinn=active.filter(function(p){
+    var ffR=p.ffpct>0?p.ffpct:(p.forsv>0?p.ff/p.forsv*100:0);
+    return ffR>=T.fysRed&&p.antal>=20;
+  }).sort(function(a,b){return b.ff-a.ff}).slice(0,20);
+  if(highSvinn.length){
+    groups.push({title:'H\u00f6g FYS p\u00e5 popul\u00e4ra produkter',icon:'\ud83d\uddd1',
+      desc:'Produkter med FYS \u2265'+T.fysRed+'% som s\u00e4ljer minst 20 enheter.',severity:'danger',
+      items:highSvinn.map(function(p){
+        var ffR=p.ffpct>0?p.ffpct:(p.forsv>0?p.ff/p.forsv*100:0);
+        return {product:p,detail:'FYS: <strong>'+ffR.toFixed(1)+'%</strong> ('+Math.round(p.ff).toLocaleString('sv')+' kr) \u00b7 Antal: <strong>'+p.antal.toLocaleString('sv')+'</strong>'};
+      })
+    });
+  }
+
+  // 4. High volume + low margin
+  var hvlm=active.filter(function(p){return p.antal>=50&&p.margpct>=0&&p.margpct<T.margAmber})
+    .sort(function(a,b){return a.margpct-b.margpct}).slice(0,20);
+  if(hvlm.length){
+    groups.push({title:'H\u00f6g volym, l\u00e5g marginal',icon:'\u26a0',
+      desc:'Produkter som s\u00e4ljer bra men har marginal under '+T.margAmber+'%. Se \u00f6ver ink\u00f6pspris eller f\u00f6rs\u00e4ljningspris.',severity:'warning',
+      items:hvlm.map(function(p){return {product:p,detail:'Antal: <strong>'+p.antal.toLocaleString('sv')+'</strong> \u00b7 Marg: <strong>'+p.margpct.toFixed(1)+'%</strong> \u00b7 BV: <strong>'+Math.round(p.bv).toLocaleString('sv')+' kr</strong>'}})
+    });
+  }
+
+  // 5. Margin outliers below KAT average
+  var katAvg={};
+  active.forEach(function(p){
+    if(!katAvg[p.kat])katAvg[p.kat]={sum:0,forsv:0,n:0};
+    katAvg[p.kat].sum+=p.marg;katAvg[p.kat].forsv+=p.forsv;katAvg[p.kat].n++;
+  });
+  var outliers=active.filter(function(p){
+    var ka=katAvg[p.kat];if(!ka||ka.n<3||ka.forsv===0)return false;
+    return p.margpct<(ka.sum/ka.forsv*100)-10&&p.antal>=10;
+  }).sort(function(a,b){
+    var dA=a.margpct-(katAvg[a.kat].sum/katAvg[a.kat].forsv*100);
+    var dB=b.margpct-(katAvg[b.kat].sum/katAvg[b.kat].forsv*100);
+    return dA-dB;
+  }).slice(0,20);
+  if(outliers.length){
+    groups.push({title:'Marginal l\u00e5ngt under KAT-snitt',icon:'\ud83d\udcc9',
+      desc:'Produkter vars marginal ligger >10 procentenheter under sitt kategorisnitt.',severity:'warning',
+      items:outliers.map(function(p){
+        var avg=katAvg[p.kat].sum/katAvg[p.kat].forsv*100;
+        return {product:p,detail:'Marg: <strong>'+p.margpct.toFixed(1)+'%</strong> vs KAT-snitt <strong>'+avg.toFixed(1)+'%</strong> (KAT '+(p.kat||'\u2013')+')'};
+      })
+    });
+  }
+
+  // 6. Hidden potential
+  var hidden=active.filter(function(p){return p.margpct>=T.margGreen+5&&p.antal<15&&p.antal>0})
+    .sort(function(a,b){return b.margpct-a.margpct}).slice(0,15);
+  if(hidden.length){
+    groups.push({title:'Outnyttjad potential',icon:'\ud83d\udc8e',
+      desc:'H\u00f6g marginal (\u2265'+(T.margGreen+5)+'%) men s\u00e4ljer under 15 enheter. Kan gynnas av b\u00e4ttre exponering.',severity:'info',
+      items:hidden.map(function(p){return {product:p,detail:'Marg: <strong>'+p.margpct.toFixed(1)+'%</strong> \u00b7 Antal: <strong>'+p.antal.toLocaleString('sv')+'</strong> \u00b7 BV: <strong>'+Math.round(p.bv).toLocaleString('sv')+' kr</strong>'}})
+    });
+  }
+
+  // Count and render
+  var container=document.getElementById('alerts-container');
+  var emptyEl=document.getElementById('alerts-empty');
+  var total=groups.reduce(function(s,g){return s+g.items.length},0);
+  var badge=document.getElementById('alert-count-tab');
+  if(total>0){badge.textContent=total;badge.style.display='inline'}else{badge.style.display='none'}
+
+  if(!groups.length){container.innerHTML='';emptyEl.style.display='block';return}
+  emptyEl.style.display='none';
+
+  container.innerHTML=groups.map(function(g){
+    var cc='alert-card-'+g.severity, bc='alert-badge-'+g.severity;
+    var sl=g.severity==='danger'?'Kritisk':g.severity==='warning'?'Varning':'Info';
+    return '<div class="alert-group">'+
+      '<div class="alert-group-title"><span class="alert-group-icon">'+g.icon+'</span> '+g.title+' <span style="font-size:12px;font-weight:400;color:var(--mut)">('+g.items.length+')</span></div>'+
+      '<div class="alert-group-desc">'+g.desc+'</div>'+
+      '<div class="alert-cards">'+g.items.map(function(item){
+        var p=item.product;
+        var searchVal=(p.ean||p.bnr||'').replace(/'/g,"\\'");
+        return '<div class="alert-card '+cc+'" onclick="setView(\'products\');document.getElementById(\'search\').value=\''+searchVal+'\';renderTable()">'+
+          '<div class="alert-card-head"><div class="alert-card-name">'+(p.ben||'\u2013')+'</div><span class="alert-card-badge '+bc+'">'+sl+'</span></div>'+
+          '<div class="alert-card-detail">'+item.detail+'</div>'+
+          '<div style="margin-top:6px;font-size:10px;color:var(--mut)">KAT '+(p.kat||'\u2013')+(KAT_NAMES[p.kat]?' \u2013 '+KAT_NAMES[p.kat]:'')+' \u00b7 <span class="badge '+TIER_BADGE[p.tier]+'" style="font-size:8px">'+p.tier+'</span></div>'+
+        '</div>';
+      }).join('')+'</div></div>';
+  }).join('');
+}
