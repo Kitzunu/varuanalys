@@ -106,8 +106,9 @@ function processData(rows){
     if(p.margpct>=99)return Object.assign({},p,{score:0,tier:'Marg 99%'});
     if(p.antal===0||p.antal<0)return Object.assign({},p,{score:0,tier:'Systemfel'});
     if(p.bv<0||p.marg<0)return Object.assign({},p,{score:0,tier:'Ta bort'});
+    var T=getThresholds();
     var vS=(p.antal/maxA)*100, mS=(p.marg/maxM)*100;
-    var mpS=Math.min((p.margpct/60)*100,100), bS=(p.bv/maxB)*100;
+    var mpS=Math.min((p.margpct/T.margCap)*100,100), bS=(p.bv/maxB)*100;
     var fr=p.forsv>0?p.ff/p.forsv:0, sS=Math.max(0,(1-fr)*100);
     var W=getWeights();
     var sc=Math.round(((vS*W.vol)+(mS*W.marg)+(mpS*W.margpct)+(sS*W.svinn)+(bS*W.bv))*10)/10;
@@ -172,11 +173,11 @@ function rescoreAndRender(){
   var maxA=Math.max.apply(null,allProducts.map(function(p){return p.antal}).concat([1]));
   var maxM=Math.max.apply(null,allProducts.map(function(p){return p.marg}).concat([1]));
   var maxB=Math.max.apply(null,allProducts.map(function(p){return p.bv}).concat([1]));
-  var W=getWeights();
+  var W=getWeights();var T=getThresholds();
   allProducts.forEach(function(p){
     if(isExcludedTier(p.tier))return;
     var vS=(p.antal/maxA)*100, mS=(p.marg/maxM)*100;
-    var mpS=Math.min((p.margpct/60)*100,100), bS=(p.bv/maxB)*100;
+    var mpS=Math.min((p.margpct/T.margCap)*100,100), bS=(p.bv/maxB)*100;
     var fr=p.forsv>0?p.ff/p.forsv:0, sS=Math.max(0,(1-fr)*100);
     p.score=Math.round(((vS*W.vol)+(mS*W.marg)+(mpS*W.margpct)+(sS*W.svinn)+(bS*W.bv))*10)/10;
     p.breakdown={vol:Math.round(vS*W.vol*10)/10,marg:Math.round(mS*W.marg*10)/10,margpct:Math.round(mpS*W.margpct*10)/10,svinn:Math.round(sS*W.svinn*10)/10,bv:Math.round(bS*W.bv*10)/10};
@@ -204,4 +205,23 @@ function resetWeights(){
   document.getElementById('w-svinn').value=10;
   document.getElementById('w-bv').value=15;
   updateWeights();
+}
+
+function updateThreshold(key,val){
+  var n=parseFloat(val);
+  if(isNaN(n))return;
+  THRESHOLDS[key]=n;
+  if(key==='margCap'&&allProducts.length){rescoreAndRender();return}
+  if(allProducts.length){buildMetrics();renderPageRows();saveSession()}
+}
+
+function resetAllSettings(){
+  THRESHOLDS={margGreen:32,margAmber:30,fysRed:2,bvGreenKr:5000,bvAmberPct:10,margCap:60};
+  document.getElementById('th-marg-green').value=32;
+  document.getElementById('th-marg-amber').value=30;
+  document.getElementById('th-fys-red').value=2;
+  document.getElementById('th-bv-green-kr').value=5000;
+  document.getElementById('th-bv-amber-pct').value=10;
+  document.getElementById('th-marg-cap').value=60;
+  resetWeights();
 }

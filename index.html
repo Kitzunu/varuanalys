@@ -61,7 +61,7 @@
         <span style="font-family:var(--disp);font-size:11px;font-weight:600;color:var(--txt)">Poängmodell:</span>
         <span>Volym 40%</span><span>·</span><span>Marginal kr 20%</span><span>·</span><span>Marginal % 15%</span><span>·</span><span>Svinnstraff 10%</span><span>·</span><span>Bruttovinst 15%</span>
         <span style="color:var(--brd2)">|</span>
-        <span style="cursor:pointer;color:var(--acc2)" onclick="setView('weights')" title="Klicka för att ändra vikter">⚙ Ändra vikter</span>
+        <span style="cursor:pointer;color:var(--acc2)" onclick="setView('settings')" title="Klicka för att ändra vikter och inställningar">⚙ Inställningar</span>
         <span style="color:var(--brd2)">|</span>
         <span title="Rangordnas relativt inom KAT. Topp 10% = Prioritet, 11–40% = Bra, 41–80% = Genomsnittlig, botten 20% = Låg">Poängsättning baseras på artiklar ur samma kategori</span>
       </div>
@@ -88,6 +88,7 @@
       <button class="view-tab" onclick="setView('svinn')" data-tip="Produkter med hög fysisk förlust (FYS) som bör ses över">Svinn watchlist</button>
       <button class="view-tab" onclick="setView('katcomp')" data-tip="Jämför nyckeltal mellan kategorier sida vid sida">KAT jämförelse</button>
       <button class="view-tab" onclick="setView('charts')" data-tip="Visuella diagram över försäljning, marginaler och fördelning">Diagram</button>
+      <button class="view-tab" onclick="setView('settings')" data-tip="Alla inställningar – vikter, tröskelvärden och färgkodning">⚙ Inställningar</button>
     </div>
 
     <!-- Charts view -->
@@ -239,25 +240,102 @@
       </div></div>
     </div>
 
-    <!-- Weights panel -->
-    <div id="view-weights" class="summary-section">
-      <div style="background:var(--surf);border:1px solid var(--brd);border-radius:12px;padding:20px 24px;max-width:560px">
-        <div style="font-family:var(--disp);font-size:14px;font-weight:700;margin-bottom:4px">Poängvikter</div>
-        <div style="font-size:12px;color:var(--mut);margin-bottom:20px">Vikterna måste summera till 100%. Ändringarna slår igenom direkt.</div>
-        <div id="weights-error" style="display:none;color:var(--red);font-size:12px;margin-bottom:12px"></div>
-        <div style="display:flex;flex-direction:column;gap:14px">
-          <div class="weight-row"><label>Volym (Antal sålda)</label><div class="weight-input-wrap"><input type="number" id="w-vol" min="0" max="100" value="40" oninput="updateWeights()"><span class="weight-pct">%</span></div></div>
-          <div class="weight-row"><label>Marginal kr</label><div class="weight-input-wrap"><input type="number" id="w-marg" min="0" max="100" value="20" oninput="updateWeights()"><span class="weight-pct">%</span></div></div>
-          <div class="weight-row"><label>Marginal %</label><div class="weight-input-wrap"><input type="number" id="w-margpct" min="0" max="100" value="15" oninput="updateWeights()"><span class="weight-pct">%</span></div></div>
-          <div class="weight-row"><label>Svinnstraff</label><div class="weight-input-wrap"><input type="number" id="w-svinn" min="0" max="100" value="10" oninput="updateWeights()"><span class="weight-pct">%</span></div></div>
-          <div class="weight-row"><label>Bruttovinst</label><div class="weight-input-wrap"><input type="number" id="w-bv" min="0" max="100" value="15" oninput="updateWeights()"><span class="weight-pct">%</span></div></div>
+    <!-- Settings panel -->
+    <div id="view-settings" class="summary-section">
+      <div class="settings-grid">
+
+        <!-- Scoring weights -->
+        <div class="settings-card">
+          <div class="settings-card-title">Poängvikter</div>
+          <div class="settings-card-desc">Vikterna måste summera till 100%. Ändringarna slår igenom direkt.</div>
+          <div id="weights-error" style="display:none;color:var(--red);font-size:12px;margin-bottom:12px"></div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div class="weight-row"><label>Volym (Antal sålda)</label><div class="weight-input-wrap"><input type="number" id="w-vol" min="0" max="100" value="40" oninput="updateWeights()"><span class="weight-pct">%</span></div></div>
+            <div class="weight-row"><label>Marginal kr</label><div class="weight-input-wrap"><input type="number" id="w-marg" min="0" max="100" value="20" oninput="updateWeights()"><span class="weight-pct">%</span></div></div>
+            <div class="weight-row"><label>Marginal %</label><div class="weight-input-wrap"><input type="number" id="w-margpct" min="0" max="100" value="15" oninput="updateWeights()"><span class="weight-pct">%</span></div></div>
+            <div class="weight-row"><label>Svinnstraff</label><div class="weight-input-wrap"><input type="number" id="w-svinn" min="0" max="100" value="10" oninput="updateWeights()"><span class="weight-pct">%</span></div></div>
+            <div class="weight-row"><label>Bruttovinst</label><div class="weight-input-wrap"><input type="number" id="w-bv" min="0" max="100" value="15" oninput="updateWeights()"><span class="weight-pct">%</span></div></div>
+          </div>
+          <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--brd);display:flex;align-items:center;gap:12px">
+            <span style="font-size:12px;color:var(--mut)">Summa: <strong id="weights-sum" style="color:var(--txt)">100%</strong></span>
+            <button class="btn-new" onclick="resetWeights()" style="font-size:11px;padding:5px 12px">Återställ standard</button>
+          </div>
         </div>
-        <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--brd);display:flex;align-items:center;gap:12px">
-          <span style="font-size:12px;color:var(--mut)">Summa: <strong id="weights-sum" style="color:var(--txt)">100%</strong></span>
-          <button class="btn-new" onclick="resetWeights()" style="font-size:11px;padding:5px 12px">Återställ standard</button>
+
+        <!-- Margin % thresholds -->
+        <div class="settings-card">
+          <div class="settings-card-title">Marginal % — färgkodning</div>
+          <div class="settings-card-desc">Styr när Marg %-kolumnen visas som grön, gul eller röd.</div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div class="weight-row">
+              <label><span class="settings-dot" style="background:var(--grn)"></span> Grön — bra marginal ≥</label>
+              <div class="weight-input-wrap"><input type="number" id="th-marg-green" min="0" max="100" value="32" oninput="updateThreshold('margGreen',this.value)"><span class="weight-pct">%</span></div>
+            </div>
+            <div class="weight-row">
+              <label><span class="settings-dot" style="background:var(--amb)"></span> Gul — acceptabel ≥</label>
+              <div class="weight-input-wrap"><input type="number" id="th-marg-amber" min="0" max="100" value="30" oninput="updateThreshold('margAmber',this.value)"><span class="weight-pct">%</span></div>
+            </div>
+            <div class="weight-row">
+              <label><span class="settings-dot" style="background:var(--red)"></span> Röd — under gul</label>
+              <div class="weight-input-wrap"><span style="font-size:12px;color:var(--mut);font-family:var(--mono)">auto</span></div>
+            </div>
+          </div>
         </div>
+
+        <!-- FYS % thresholds -->
+        <div class="settings-card">
+          <div class="settings-card-title">FYS % — svinnbudget</div>
+          <div class="settings-card-desc">Gränsvärde för när fysisk förlust markeras som problematisk.</div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div class="weight-row">
+              <label><span class="settings-dot" style="background:var(--red)"></span> Röd — hög förlust ≥</label>
+              <div class="weight-input-wrap"><input type="number" id="th-fys-red" min="0" max="100" step="0.5" value="2" oninput="updateThreshold('fysRed',this.value)"><span class="weight-pct">%</span></div>
+            </div>
+          </div>
+          <div style="margin-top:10px;font-size:11px;color:var(--mut)">Påverkar FYS %-kolumnen, metrikkortens färg, svinn watchlist och sammanfattningsvyer.</div>
+        </div>
+
+        <!-- BV thresholds -->
+        <div class="settings-card">
+          <div class="settings-card-title">Bruttovinst — färgkodning</div>
+          <div class="settings-card-desc">Styr färgkodning för BV kr och BV %-kolumnerna.</div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div class="weight-row">
+              <label><span class="settings-dot" style="background:var(--grn)"></span> BV kr grön ≥</label>
+              <div class="weight-input-wrap"><input type="number" id="th-bv-green-kr" min="0" value="5000" oninput="updateThreshold('bvGreenKr',this.value)"><span class="weight-pct">kr</span></div>
+            </div>
+            <div class="weight-row">
+              <label><span class="settings-dot" style="background:var(--amb)"></span> BV % gul under</label>
+              <div class="weight-input-wrap"><input type="number" id="th-bv-amber-pct" min="0" max="100" value="10" oninput="updateThreshold('bvAmberPct',this.value)"><span class="weight-pct">%</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scoring cap -->
+        <div class="settings-card">
+          <div class="settings-card-title">Poängberäkning</div>
+          <div class="settings-card-desc">Avancerade inställningar för poängsättningen.</div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div class="weight-row">
+              <label>Marginal %-tak för poängberäkning</label>
+              <div class="weight-input-wrap"><input type="number" id="th-marg-cap" min="10" max="100" value="60" oninput="updateThreshold('margCap',this.value)"><span class="weight-pct">%</span></div>
+            </div>
+          </div>
+          <div style="margin-top:10px;font-size:11px;color:var(--mut)">Marginal% normaliseras mot detta värde vid poängberäkning. Högre värde = lägre poäng vid samma marginal.</div>
+        </div>
+
+        <!-- Reset all -->
+        <div class="settings-card" style="background:transparent;border-style:dashed">
+          <div class="settings-card-title">Återställ allt</div>
+          <div class="settings-card-desc">Återställ alla inställningar till standardvärden.</div>
+          <button class="btn-new" onclick="resetAllSettings()" style="margin-top:8px">Återställ alla inställningar</button>
+        </div>
+
       </div>
     </div>
+
+    <!-- Weights panel (alias for backwards compat) -->
+    <div id="view-weights" class="summary-section" style="display:none!important"></div>
 
     <!-- Products view -->
     <div id="view-products">

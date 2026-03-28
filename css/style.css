@@ -220,6 +220,11 @@ th[data-tip]{cursor:pointer}
 .page-btn:disabled{opacity:.3;cursor:default}
 .page-btn.active{background:var(--acc);color:var(--bg);border-color:var(--acc);font-weight:600}
 .page-nums{display:flex;gap:4px}
+.settings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.settings-card{background:var(--surf);border:1px solid var(--brd);border-radius:12px;padding:18px 22px}
+.settings-card-title{font-family:var(--disp);font-size:14px;font-weight:700;margin-bottom:4px}
+.settings-card-desc{font-size:12px;color:var(--mut);margin-bottom:16px;line-height:1.5}
+.settings-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
 #pdf-kat-container{display:none}
 .weight-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .weight-row label{font-size:13px;color:var(--txt);flex:1}

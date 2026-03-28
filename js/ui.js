@@ -38,8 +38,8 @@ function buildMetrics(){
     '<div class="metric m-blue" data-tip="Total omsättning i kronor – summan av alla produkters försäljningsvärde"><div class="metric-label">Försäljningsvärde</div><div class="metric-value">'+Math.round(totalForsv).toLocaleString('sv')+'</div><div class="metric-sub">kr perioden</div></div>'+
     '<div class="metric m-green" data-tip="Total marginal i kronor – skillnaden mellan försäljningsvärde och inköpskostnad"><div class="metric-label">Total marginal</div><div class="metric-value">'+Math.round(totalMarg).toLocaleString('sv')+'</div><div class="metric-sub">kr perioden</div></div>'+
     '<div class="metric m-green" data-tip="Genomsnittlig marginalprocent – total marginal delat med totalt försäljningsvärde"><div class="metric-label">Marg %</div><div class="metric-value">'+avgMargP.toFixed(1)+'%</div><div class="metric-sub">marg/försäljning</div></div>'+
-    '<div class="metric '+(avgSvP>=2?'m-danger':'')+'" data-tip="Fysisk förlust i procent av försäljningsvärdet. Markeras röd vid ≥2%. Inkluderar svinn, stöld och kassation"><div class="metric-label">FYS %</div><div class="metric-value">'+avgSvP.toFixed(1)+'%</div><div class="metric-sub">av försäljning</div></div>'+
-    '<div class="metric '+(avgSvP>=2?'m-danger':'')+'" data-tip="Total fysisk förlust i kronor – summan av allt svinn, stöld och kassation under perioden"><div class="metric-label">Total FYS</div><div class="metric-value">'+Math.round(totalFF).toLocaleString('sv')+'</div><div class="metric-sub">kr förlorat</div></div>'+
+    '<div class="metric '+(avgSvP>=getThresholds().fysRed?'m-danger':'')+'" data-tip="Fysisk förlust i procent av försäljningsvärdet. Markeras röd vid ≥'+getThresholds().fysRed+'%. Inkluderar svinn, stöld och kassation"><div class="metric-label">FYS %</div><div class="metric-value">'+avgSvP.toFixed(1)+'%</div><div class="metric-sub">av försäljning</div></div>'+
+    '<div class="metric '+(avgSvP>=getThresholds().fysRed?'m-danger':'')+'" data-tip="Total fysisk förlust i kronor – summan av allt svinn, stöld och kassation under perioden"><div class="metric-label">Total FYS</div><div class="metric-value">'+Math.round(totalFF).toLocaleString('sv')+'</div><div class="metric-sub">kr förlorat</div></div>'+
     '<div class="metric" data-tip="Bruttovinstprocent – bruttovinst (marginal minus förluster) delat med försäljningsvärde"><div class="metric-label">BV %</div><div class="metric-value">'+avgBvP.toFixed(1)+'%</div><div class="metric-sub">bv/försäljning</div></div>'+
     '<div class="metric" data-tip="Total bruttovinst i kronor – marginal minus fysisk förlust för alla produkter"><div class="metric-label">Total bruttovinst</div><div class="metric-value">'+Math.round(totalBv).toLocaleString('sv')+'</div><div class="metric-sub">kr perioden</div></div>'+
     '';
@@ -58,14 +58,16 @@ function buildTabs(){
 function setTier(t){activeTier=t;buildTabs();renderTable();saveSession()}
 
 function setView(v){
+  if(v==='weights')v='settings';
   currentView=v;
-  var views=['products','vom','kat','movers','svinn','katcomp','charts'];
+  var views=['products','vom','kat','movers','svinn','katcomp','charts','settings'];
   document.querySelectorAll('.view-tab').forEach(function(t,i){
     t.classList.toggle('active',views[i]===v);
   });
   document.getElementById('view-products').style.display=v==='products'?'block':'none';
-  ['vom','kat','movers','svinn','katcomp','weights','charts'].forEach(function(k){
+  ['vom','kat','movers','svinn','katcomp','settings','charts'].forEach(function(k){
     var el=document.getElementById('view-'+k);
+    if(!el)return;
     el.classList.toggle('visible',v===k);
     if(v===k){requestAnimationFrame(setTableHeight);if(k==='movers')buildMovers();if(k==='svinn')buildSvinn();if(k==='katcomp')buildKatComp();if(k==='charts')buildCharts();}
   });
@@ -134,13 +136,14 @@ function renderPageRows(){
   var start=pageSize===0?0:(currentPage-1)*pageSize;
   var end=pageSize===0?filteredProducts.length:Math.min(start+pageSize,filteredProducts.length);
   var page=filteredProducts.slice(start,end);
+  var T=getThresholds();
   tb.innerHTML=page.map(function(p){
     var bw=Math.round(p.score*.55);
-    var bvC=p.bv<0?'cr':p.bv>5000?'cg':'';
+    var bvC=p.bv<0?'cr':p.bv>=T.bvGreenKr?'cg':'';
     var ffRatioDisp=p.ffpct>0?p.ffpct:(p.forsv>0?p.ff/p.forsv*100:0);
-    var ffC=ffRatioDisp>=2?'cr':'cm';
-    var bpC=p.bvpct<0?'cr':(p.bvpct>0&&p.bvpct<10?'ca':'');
-    var mpC=p.margpct>32?'cg':p.margpct>30?'ca':p.margpct>0?'cr':p.margpct<0?'cr':'';
+    var ffC=ffRatioDisp>=T.fysRed?'cr':'cm';
+    var bpC=p.bvpct<0?'cr':(p.bvpct>0&&p.bvpct<T.bvAmberPct?'ca':'');
+    var mpC=p.margpct>=T.margGreen?'cg':p.margpct>=T.margAmber?'ca':p.margpct>0?'cr':p.margpct<0?'cr':'';
     var isRem=isExcludedTier(p.tier);
     var hlC=highlightMode?' '+TIER_HL[p.tier]:'';
     var remC=(!highlightMode&&isRem)?'tr-remove':'';

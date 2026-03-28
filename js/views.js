@@ -33,7 +33,8 @@ function renderSummary(tbId,data){
   function fmtP(n){return n===0?'–':n.toFixed(1)+'%'}
   var isVom=tbId==='vom-body';
   document.getElementById(tbId).innerHTML=data.map(function(r){
-    var svC=r.avgSvinnPct>=2?'style="color:var(--red)"':'';
+    var T=getThresholds();
+    var svC=r.avgSvinnPct>=T.fysRed?'style="color:var(--red)"':'';
     var nameMap=isVom?VOM_NAMES:KAT_NAMES;
     var name=nameMap[r.grpKey];
     var keyCell=r.grpKey+(name?'<span class="mc-name">'+name+'</span>':'');
@@ -43,8 +44,8 @@ function renderSummary(tbId,data){
       '<td class="nr">'+fmt(r.antal)+'</td>'+
       '<td class="nr" style="color:var(--acc2)">'+fmt(r.forsv)+'</td>'+
       '<td class="nr" style="color:var(--grn)">'+fmt(r.marg)+'</td>'+
-      '<td class="nr" style="color:'+(r.avgMargPct>32?'var(--grn)':r.avgMargPct>30?'var(--amb)':r.avgMargPct>0?'var(--red)':'var(--mut)')+'">'+ fmtP(r.avgMargPct)+'</td>'+
-      '<td class="nr" '+(r.avgSvinnPct>=2?'style="color:var(--red)"':'')+'>'+fmt(r.ff)+'</td>'+
+      '<td class="nr" style="color:'+(r.avgMargPct>=T.margGreen?'var(--grn)':r.avgMargPct>=T.margAmber?'var(--amb)':r.avgMargPct>0?'var(--red)':'var(--mut)')+'">'+ fmtP(r.avgMargPct)+'</td>'+
+      '<td class="nr" '+(r.avgSvinnPct>=T.fysRed?'style="color:var(--red)"':'')+'>'+fmt(r.ff)+'</td>'+
       '<td class="nr" '+svC+'>'+fmtP(r.avgSvinnPct)+'</td>'+
       '<td class="nr" style="color:var(--grn)">'+fmt(r.bv)+'</td>'+
       '<td class="nr">'+fmtP(r.avgBvPct)+'</td>'+
@@ -136,7 +137,8 @@ function buildMovers(){
 
   function fmt(n){return n===0?'–':Math.round(n).toLocaleString('sv')}
   function fmtP(n){return n===0?'–':n.toFixed(1)+'%'}
-  var mpC=function(v){return v>32?'cg':v>30?'ca':v>0?'cr':''};
+  var T=getThresholds();
+  var mpC=function(v){return v>=T.margGreen?'cg':v>=T.margAmber?'ca':v>0?'cr':''};
   var empty6='<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--mut);font-size:11px">Inga produkter matchar — justera tröskelvärdena</td></tr>';
   var empty10='<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--mut);font-size:11px">Inga produkter matchar — justera tröskelvärdena</td></tr>';
 
@@ -168,7 +170,7 @@ function buildMovers(){
 
   document.getElementById('movers-bottom-body').innerHTML=bottom.length?bottom.map(function(p){
     var ffR=p.ffpct>0?p.ffpct:(p.forsv>0?p.ff/p.forsv*100:0);
-    var ffCl=ffR>=2?'cr':ffR>0?'ca':'cm';
+    var ffCl=ffR>=T.fysRed?'cr':ffR>0?'ca':'cm';
     return '<tr>'+
       '<td class="mc">'+p.kat+(KAT_NAMES[p.kat]?'<span class="mc-name">'+KAT_NAMES[p.kat]+'</span>':'')+'</td>'+
       '<td class="mc">'+p.bnr+'</td>'+
@@ -213,7 +215,8 @@ function buildSvinn(){
   if(hdEl)hdEl.classList.add(svinnSort.dir);
   function fmt(n){return n===0?'–':Math.round(n).toLocaleString('sv')}
   function fmtP(n){return n===0?'–':n.toFixed(1)+'%'}
-  var mpC=function(v){return v>32?'cg':v>30?'ca':v>0?'cr':''};
+  var T=getThresholds();
+  var mpC=function(v){return v>=T.margGreen?'cg':v>=T.margAmber?'ca':v>0?'cr':''};
   var el=document.getElementById('svinn-body');
   if(!active.length){el.innerHTML='<tr><td colspan="13" style="text-align:center;padding:32px;color:var(--mut)">Inga produkter matchar tröskelvärdet</td></tr>';return;}
   el.innerHTML=active.map(function(p){
@@ -316,14 +319,15 @@ function buildKatComp(chosenKat){
     var cls=d>=0?'cg':'cr';
     return '<span class="'+cls+'">'+s+(pct?d.toFixed(1)+'pp':Math.round(d).toLocaleString('sv'))+'</span>';
   }
-  var mpC=function(v){return v>32?'cg':v>30?'ca':v>0?'cr':''};
+  var T=getThresholds();
+  var mpC=function(v){return v>=T.margGreen?'cg':v>=T.margAmber?'ca':v>0?'cr':''};
   var avgRow='<tr style="background:var(--surf2);font-weight:600">'+
     '<td class="mc" colspan="3" style="color:var(--mut)">KAT-snitt ('+prods.length+' prod.)</td>'+
     '<td class="nr" style="color:var(--mut)">'+Math.round(avgAntal).toLocaleString('sv')+'</td>'+
     '<td class="nr" style="color:var(--mut)">–</td>'+
     '<td class="nr '+(mpC(avgMarg))+'">'+avgMarg.toFixed(1)+'%</td>'+
     '<td class="nr" style="color:var(--mut)">–</td>'+
-    '<td class="nr '+(avgFF>=2?'cr':avgFF>0?'ca':'cm')+'">'+avgFF.toFixed(1)+'%</td>'+
+    '<td class="nr '+(avgFF>=T.fysRed?'cr':avgFF>0?'ca':'cm')+'">'+avgFF.toFixed(1)+'%</td>'+
     '<td class="nr" style="color:var(--mut)">–</td>'+
     '<td class="nr">'+Math.round(avgBv).toLocaleString('sv')+'</td>'+
     '<td class="nr" style="color:var(--mut)">–</td>'+
@@ -338,7 +342,7 @@ function buildKatComp(chosenKat){
       '<td class="nr">'+diff(p.antal,avgAntal,false)+'</td>'+
       '<td class="nr '+mpC(p.margpct)+'">'+fmtP(p.margpct)+'</td>'+
       '<td class="nr">'+diff(p.margpct,avgMarg,true)+'</td>'+
-      '<td class="nr '+(p.ffR>=2?'cr':p.ffR>0?'ca':'cm')+'">'+fmtP(p.ffR)+'</td>'+
+      '<td class="nr '+(p.ffR>=T.fysRed?'cr':p.ffR>0?'ca':'cm')+'">'+fmtP(p.ffR)+'</td>'+
       '<td class="nr">'+diff(-p.ffR,-avgFF,true)+'</td>'+
       '<td class="nr">'+fmt(p.bv)+'</td>'+
       '<td class="nr">'+diff(p.bv,avgBv,false)+'</td>'+

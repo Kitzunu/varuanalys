@@ -21,6 +21,24 @@ var TIER_PILL={Prioritet:'tp-p',Bra:'tp-b',Genomsnittlig:'tp-g','Låg':'tp-l','T
 var TIER_HL={Prioritet:'hl-p',Bra:'hl-b',Genomsnittlig:'hl-g','Låg':'hl-l','Ta bort':'hl-r',Systemfel:'hl-r',Ignorerad:'hl-r','Marg 99%':'hl-r',Kategoriförsäljning:'hl-r',Tobak:'hl-r'};
 var BAR_COLOR={Prioritet:'#c8f060',Bra:'#60d4f0',Genomsnittlig:'#888780','Låg':'#f0b860','Ta bort':'#f06060',Systemfel:'#f06060',Ignorerad:'#f06060','Marg 99%':'#f06060',Kategoriförsäljning:'#f06060',Tobak:'#f06060'};
 
+/* Configurable thresholds */
+var THRESHOLDS={
+  margGreen:32,     // Marg % >= green
+  margAmber:30,     // Marg % >= amber (below green)
+  fysRed:2,         // FYS % >= red
+  bvGreenKr:5000,   // BV kr >= green
+  bvAmberPct:10,    // BV % < amber (above 0)
+  margCap:60        // Margin % scoring cap
+};
+
+function getThresholds(){return THRESHOLDS}
+
+function setThreshold(key,val){
+  THRESHOLDS[key]=val;
+  saveSession();
+  if(allProducts.length){rescoreAndRender()}
+}
+
 /* Excluded tiers helper */
 var EXCLUDED_TIERS=['Ta bort','Systemfel','Ignorerad','Marg 99%','Kategoriförsäljning','Tobak'];
 function isExcludedTier(tier){return EXCLUDED_TIERS.indexOf(tier)!==-1}
@@ -51,6 +69,7 @@ function saveSession(){
       period:period,
       products:allProducts,
       weights:weights,
+      thresholds:THRESHOLDS,
       activeTier:activeTier,
       sortField:sortField,
       sortDir:sortDir,

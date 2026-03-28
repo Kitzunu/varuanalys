@@ -58,6 +58,16 @@ function resetApp(){
   var session=loadSession();
   if(!session)return;
 
+  // Restore thresholds before scoring
+  if(session.thresholds){
+    THRESHOLDS=session.thresholds;
+    var thInputs={margGreen:'th-marg-green',margAmber:'th-marg-amber',fysRed:'th-fys-red',bvGreenKr:'th-bv-green-kr',bvAmberPct:'th-bv-amber-pct',margCap:'th-marg-cap'};
+    Object.keys(thInputs).forEach(function(k){
+      var el=document.getElementById(thInputs[k]);
+      if(el&&THRESHOLDS[k]!==undefined)el.value=THRESHOLDS[k];
+    });
+  }
+
   // Restore weights before scoring (they affect display)
   if(session.weights){
     document.getElementById('w-vol').value=session.weights.vol;
