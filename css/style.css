@@ -1,6 +1,10 @@
 @media print {
   body{background:#fff!important;color:#111!important;font-family:Arial,sans-serif;font-size:10px}
   #upload-screen,#loading-screen{display:none!important}
+  .toast{display:none!important}
+  #help-tip{display:none!important}
+  #score-tooltip{display:none!important}
+  .global-search-results{display:none!important}
   #dashboard{display:block!important}
   .topbar{position:relative!important;background:#fff!important;border-bottom:1px solid #ddd;padding:10px 16px;display:flex;align-items:center;gap:12px}
   .topbar-logo{color:#111!important;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
@@ -50,6 +54,26 @@
   #view-movers.print-visible{page-break-before:always}
   #view-svinn.print-visible{page-break-before:always}
   #view-katcomp.print-visible{page-break-before:always}
+  #view-report.print-visible{display:block!important}
+  #view-report.print-visible .report-section{border:1px solid #ddd!important;background:#fff!important;page-break-inside:avoid}
+  #view-report.print-visible .report-header{margin-bottom:12px}
+  #view-report.print-visible .report-title{font-size:16px;color:#111}
+  #view-report.print-visible .report-meta{color:#666}
+  #view-report.print-visible .report-section-title{color:#111;font-size:12px}
+  #view-report.print-visible .report-text{color:#111;font-size:11px}
+  #view-report.print-visible .report-finding{border:1px solid #ddd!important;background:#f9f9f9!important}
+  #view-report.print-visible .report-bar-track{background:#eee!important}
+  #view-alerts.print-visible{display:block!important;page-break-before:always}
+  #view-alerts.print-visible .alert-group{page-break-inside:avoid}
+  #view-alerts.print-visible .alert-card{border:1px solid #ddd!important;background:#f9f9f9!important}
+  #view-alerts.print-visible .alert-group-title{color:#111}
+  #view-alerts.print-visible .alert-group-desc{color:#666}
+  #view-charts.print-visible{display:block!important;page-break-before:always}
+  #view-charts.print-visible canvas{max-height:400px!important}
+  #view-heatmap.print-visible{display:block!important;page-break-before:always}
+  #view-heatmap.print-visible .heatmap-table{font-size:8px}
+  #view-heatmap.print-visible .heatmap-cell{padding:3px 6px;font-size:9px}
+  #view-heatmap.print-visible .heatmap-label{font-size:9px}
   .sum-table{width:100%;border-collapse:collapse;font-size:8px;margin-bottom:10px}
   .sum-table th{background:#f0f0f0!important;color:#333!important;padding:4px 6px;border:1px solid #ddd;text-align:left}
   .sum-table td{padding:3px 6px;border:1px solid #eee;color:#111!important}

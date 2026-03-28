@@ -98,16 +98,16 @@ function setTier(t){activeTier=t;buildTabs();renderTable();saveSession()}
 function setView(v){
   if(v==='weights')v='settings';
   currentView=v;
-  var views=['products','vom','kat','movers','svinn','katcomp','charts','report','alerts'];
+  var views=['report','products','vom','kat','movers','svinn','katcomp','heatmap','charts','alerts'];
   document.querySelectorAll('.view-tab').forEach(function(t,i){
     t.classList.toggle('active',views[i]===v);
   });
   document.getElementById('view-products').style.display=v==='products'?'block':'none';
-  ['vom','kat','movers','svinn','katcomp','settings','charts','report','alerts'].forEach(function(k){
+  ['vom','kat','movers','svinn','katcomp','settings','heatmap','charts','report','alerts'].forEach(function(k){
     var el=document.getElementById('view-'+k);
     if(!el)return;
     el.classList.toggle('visible',v===k);
-    if(v===k){requestAnimationFrame(setTableHeight);if(k==='movers')buildMovers();if(k==='svinn')buildSvinn();if(k==='katcomp')buildKatComp();if(k==='charts')buildCharts();if(k==='report')buildReport();if(k==='alerts')buildAlerts();}
+    if(v===k){requestAnimationFrame(setTableHeight);if(k==='movers')buildMovers();if(k==='svinn')buildSvinn();if(k==='katcomp')buildKatComp();if(k==='heatmap')buildHeatmapChart();if(k==='charts')buildCharts();if(k==='report')buildReport();if(k==='alerts')buildAlerts();}
   });
   if(allProducts.length)saveSession();
 }

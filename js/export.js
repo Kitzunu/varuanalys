@@ -261,8 +261,18 @@ function exportPDF(){
     katContainer.id='pdf-kat-container';
     katContainer.innerHTML=katHtml;
     document.querySelector('.main').appendChild(katContainer);
-  } else if(printView==='vom'||printView==='kat'||printView==='movers'||printView==='svinn'||printView==='katcomp'){
+  } else if(printView==='vom'||printView==='kat'||printView==='movers'||printView==='svinn'||printView==='katcomp'||printView==='report'||printView==='alerts'||printView==='heatmap'){
+    // Build content if needed before printing
+    if(printView==='report')buildReport();
+    if(printView==='alerts')buildAlerts();
+    if(printView==='heatmap')buildHeatmapChart();
     var el=document.getElementById('view-'+printView);
+    el.classList.add('print-visible');
+    shown.push(el);
+  } else if(printView==='charts'){
+    // For charts, show both the chart container and build it
+    buildCharts();
+    var el=document.getElementById('view-charts');
     el.classList.add('print-visible');
     shown.push(el);
   }

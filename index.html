@@ -8,7 +8,7 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-<link rel="stylesheet" href="css/style.css?v=20260328d">
+<link rel="stylesheet" href="css/style.css?v=20260328e">
 </head>
 <body>
 
@@ -63,22 +63,22 @@
 
     <div class="legend-container" id="legend-container">
       <div class="legend legend-header" onclick="toggleLegend()" style="cursor:pointer;user-select:none">
-        <span style="font-family:var(--disp);font-size:11px;font-weight:600;color:var(--txt);display:flex;align-items:center;gap:6px"><span class="legend-chevron" id="legend-chevron">▾</span> Po\u00e4ngmodell &amp; Grupper</span>
+        <span style="font-family:var(--disp);font-size:11px;font-weight:600;color:var(--txt);display:flex;align-items:center;gap:6px"><span class="legend-chevron" id="legend-chevron">▾</span> Poängmodell &amp; Grupper</span>
         <span id="legend-weights" style="font-size:11px;color:var(--mut)">Volym 40% · Marginal kr 20% · Marginal % 15% · Svinnstraff 10% · Bruttovinst 15%</span>
       </div>
       <div class="legend-body" id="legend-body">
         <div class="legend">
-          <span style="font-family:var(--disp);font-size:11px;font-weight:600;color:var(--txt)">Po\u00e4ngmodell:</span>
+          <span style="font-family:var(--disp);font-size:11px;font-weight:600;color:var(--txt)">Poängmodell:</span>
           <span id="legend-weights-full">Volym 40% · Marginal kr 20% · Marginal % 15% · Svinnstraff 10% · Bruttovinst 15%</span>
           <span style="color:var(--brd2)">|</span>
-          <span title="Rangordnas relativt inom KAT. Topp 10% = Prioritet, 11\u201340% = Bra, 41\u201380% = Genomsnittlig, botten 20% = L\u00e5g">Po\u00e4ngs\u00e4ttning baseras p\u00e5 artiklar ur samma kategori</span>
+          <span title="Rangordnas relativt inom KAT. Topp 10% = Prioritet, 11\u201340% = Bra, 41\u201380% = Genomsnittlig, botten 20% = Låg">Poängsättningen baseras på artiklar ur samma kategori</span>
         </div>
         <div class="legend">
           <span style="font-family:var(--disp);font-size:11px;font-weight:600;color:var(--txt)">Grupper:</span>
           <span><span class="legend-dot" style="background:var(--acc)"></span>Prioritet (topp 10%)</span>
           <span><span class="legend-dot" style="background:var(--acc2)"></span>Bra (11\u201340%)</span>
           <span><span class="legend-dot" style="background:#888"></span>Genomsnittlig (41\u201380%)</span>
-          <span><span class="legend-dot" style="background:var(--amb)"></span>L\u00e5g (botten 20%)</span>
+          <span><span class="legend-dot" style="background:var(--amb)"></span>Låg (botten 20%)</span>
           <span><span class="legend-dot" style="background:var(--red)"></span>Ta bort</span>
           <span><span class="legend-dot" style="background:var(--red)"></span>Systemfel</span>
           <span title="Kategorier som exkluderas fr\u00e5n \u00f6veriga grupper"><span class="legend-dot" style="background:var(--red)"></span>Ignorerad (KAT 248 / 276 / 334 / 335 / 337 / 338 / 352)</span>
@@ -90,14 +90,15 @@
     </div>
 
     <div class="view-tabs">
-      <button class="view-tab active" onclick="setView('products')" data-tip="Fullständig produkttabell med alla mätvärden, filtrering och sortering">Produkter</button>
+      <button class="view-tab" onclick="setView('report')" data-tip="Automatiskt genererad sammanfattning av analysen">📋 Rapport</button>
+      <button class="view-tab" onclick="setView('products')" data-tip="Fullständig produkttabell med alla mätvärden, filtrering och sortering">Produkter</button>
       <button class="view-tab" onclick="setView('vom')" data-tip="Aggregerad sammanfattning grupperad per varuområde (VOM)">Sammanfattning per VOM</button>
       <button class="view-tab" onclick="setView('kat')" data-tip="Aggregerad sammanfattning grupperad per kategori (KAT)">Sammanfattning per KAT</button>
       <button class="view-tab" onclick="setView('movers')" data-tip="Identifierar produkter med potential, dolda pärlor och de med lägst poäng">Top / Bottom</button>
       <button class="view-tab" onclick="setView('svinn')" data-tip="Produkter med hög fysisk förlust (FYS) som bör ses över">Svinn watchlist</button>
       <button class="view-tab" onclick="setView('katcomp')" data-tip="Jämför nyckeltal mellan kategorier sida vid sida">KAT jämförelse</button>
+      <button class="view-tab" onclick="setView('heatmap')" data-tip="Färgkodad matris som visar nyckeltal per kategori">🗺 Heatmap</button>
       <button class="view-tab" onclick="setView('charts')" data-tip="Visuella diagram över försäljning, marginaler och fördelning">Diagram</button>
-      <button class="view-tab" onclick="setView('report')" data-tip="Automatiskt genererad sammanfattning av analysen">📋 Rapport</button>
       <button class="view-tab" onclick="setView('alerts')" data-tip="Automatiskt upptäckta varningar och avvikelser">⚠ Varningar <span class="alert-count" id="alert-count-tab" style="display:none"></span></button>
     </div>
 
@@ -118,6 +119,16 @@
       <div id="alerts-empty" style="display:none;text-align:center;padding:48px;color:var(--mut);font-size:14px">Inga varningar hittades – alla produkter ser bra ut! ✓</div>
     </div>
 
+    <!-- Heatmap view -->
+    <div id="view-heatmap" class="summary-section">
+      <div class="print-section-title">Heatmap: KAT × Nyckeltal</div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;background:var(--surf);border:1px solid var(--brd);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:12px">
+        <span style="font-family:var(--disp);font-size:12px;font-weight:600;color:var(--txt)">Heatmap</span>
+        <span style="color:var(--mut)">Topp 30 kategorier sorterade efter försäljningsvärde. Färgintensitet visar relativa värden per kolumn.</span>
+      </div>
+      <div id="heatmap-wrap" style="background:var(--surf);border:1px solid var(--brd);border-radius:12px;padding:20px;max-width:1200px;overflow-x:auto"></div>
+    </div>
+
     <!-- Charts view -->
     <div id="view-charts" class="summary-section">
       <div class="print-section-title">Diagram</div>
@@ -128,14 +139,12 @@
           <option value="scatter">Scatter: Marginal % vs Volym</option>
           <option value="katbar">Bruttovinst per KAT (topp 15)</option>
           <option value="vombar">Bruttovinst per VOM</option>
-          <option value="heatmap">Heatmap: KAT × Nyckeltal</option>
           <option value="tier">Fördelning per nivå</option>
         </select>
       </div>
       <div style="background:var(--surf);border:1px solid var(--brd);border-radius:12px;padding:20px;position:relative;max-width:1200px;height:520px">
         <canvas id="main-chart"></canvas>
       </div>
-      <div id="heatmap-wrap" style="display:none;background:var(--surf);border:1px solid var(--brd);border-radius:12px;padding:20px;max-width:1200px;overflow-x:auto"></div>
     </div>
 
     <!-- Movers view -->
@@ -530,12 +539,12 @@
 </div>
 
 <!-- Scripts loaded in dependency order -->
-<script src="js/constants.js?v=20260328d"></script>
-<script src="js/data.js?v=20260328d"></script>
-<script src="js/ui.js?v=20260328d"></script>
-<script src="js/views.js?v=20260328d"></script>
-<script src="js/export.js?v=20260328d"></script>
-<script src="js/charts.js?v=20260328d"></script>
-<script src="js/app.js?v=20260328d"></script>
+<script src="js/constants.js?v=20260328e"></script>
+<script src="js/data.js?v=20260328e"></script>
+<script src="js/ui.js?v=20260328e"></script>
+<script src="js/views.js?v=20260328e"></script>
+<script src="js/export.js?v=20260328e"></script>
+<script src="js/charts.js?v=20260328e"></script>
+<script src="js/app.js?v=20260328e"></script>
 </body>
 </html>

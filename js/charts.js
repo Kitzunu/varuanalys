@@ -10,17 +10,6 @@ function buildCharts(){
   // Defer briefly so container is visible and has layout dimensions
   setTimeout(function(){
     var type=document.getElementById('chart-type-sel').value;
-    var canvasWrap=document.getElementById('main-chart').parentElement;
-    var heatWrap=document.getElementById('heatmap-wrap');
-    if(type==='heatmap'){
-      destroyChart();
-      canvasWrap.style.display='none';
-      heatWrap.style.display='block';
-      buildHeatmapChart();
-      return;
-    }
-    canvasWrap.style.display='block';
-    heatWrap.style.display='none';
     if(type==='quadrant')buildQuadrantChart();
     else if(type==='scatter')buildScatterChart();
     else if(type==='katbar')buildKatBarChart();

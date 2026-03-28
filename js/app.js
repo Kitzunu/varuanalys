@@ -51,7 +51,7 @@ document.getElementById('global-search').addEventListener('keydown',function(e){
 window.addEventListener('resize',setTableHeight);
 
 function resetApp(){
-  allProducts=[];activeTier='all';sortField='score';sortDir='desc';fileName='';highlightMode=false;currentView='products';sumSortState={};
+  allProducts=[];activeTier='all';sortField='score';sortDir='desc';fileName='';highlightMode=false;currentView='report';sumSortState={};
   document.getElementById('dashboard').style.display='none';
   document.getElementById('upload-screen').style.display='flex';
   document.getElementById('file-input').value='';

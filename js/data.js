@@ -137,6 +137,7 @@ function processData(rows){
   document.getElementById('period-disp').textContent=period;
 
   showDash();buildMetrics();buildTabs();renderTable();buildSummaries();buildAlerts();
+  setView('report');
   requestAnimationFrame(setTableHeight);
   saveSession();
   showToast(allProducts.length+' produkter importerade fr\u00e5n '+fileName,'success');
