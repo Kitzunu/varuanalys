@@ -189,6 +189,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .sum-table tr:last-child td{border-bottom:none}
 .sum-table tr:hover td{background:rgba(255,255,255,.02)}
 .error-box{background:rgba(240,96,96,.08);border:1px solid rgba(240,96,96,.2);border-radius:10px;padding:14px 18px;margin-bottom:14px;font-size:13px;color:var(--red);display:none}
+.warn-box{background:rgba(255,193,7,.08);border:1px solid rgba(255,193,7,.25);border-radius:10px;padding:14px 18px;margin-bottom:14px;font-size:13px;color:#e6a817;display:none}
 #pdf-kat-container{display:none}
 .weight-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .weight-row label{font-size:13px;color:var(--txt);flex:1}

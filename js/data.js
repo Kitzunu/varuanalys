@@ -44,37 +44,52 @@ function processData(rows){
     }
     return -1;
   }
-  var C={
-    vom:ci('vom')!==-1?ci('vom'):0, kat:ci('kat')!==-1?ci('kat'):1,
-    ean:ci('ean/plu')!==-1?ci('ean/plu'):2, bnr:ci('bnr')!==-1?ci('bnr'):3,
-    ben:ci('ben')!==-1?ci('ben'):4, vara:ci('varutext')!==-1?ci('varutext'):5,
-    antal:ci('antal')!==-1?ci('antal'):6,
-    forsv:hdrs.indexOf('förs. värde')!==-1?hdrs.indexOf('förs. värde'):8,
-    marg:ci('marg. kr')!==-1?ci('marg. kr'):13,
-    margpct:hdrs.indexOf('marg. %')!==-1?hdrs.indexOf('marg. %'):15,
-    ff:hdrs.indexOf('ff kr')!==-1?hdrs.indexOf('ff kr'):20,
-    ffpct:hdrs.indexOf('ff %')!==-1?hdrs.indexOf('ff %'):22,
-    bv:hdrs.indexOf('bruttovinst')!==-1?hdrs.indexOf('bruttovinst'):24,
-    bvpct:hdrs.indexOf('bv %')!==-1?hdrs.indexOf('bv %'):26
-  };
+  var colDefs=[
+    {key:'vom',    search:['vom'],           label:'VOM',          required:true},
+    {key:'kat',    search:['kat'],           label:'KAT',          required:true},
+    {key:'ean',    search:['ean/plu'],       label:'EAN/PLU',      required:true},
+    {key:'bnr',    search:['bnr'],           label:'BNR',          required:false},
+    {key:'ben',    search:['ben'],           label:'BEN',          required:false},
+    {key:'vara',   search:['varutext'],      label:'Varutext',     required:false},
+    {key:'antal',  search:['antal'],         label:'Antal',        required:true},
+    {key:'forsv',  search:['förs. värde'],   label:'Förs. värde',  required:true},
+    {key:'marg',   search:['marg. kr'],      label:'Marg. kr',     required:true},
+    {key:'margpct',search:['marg. %'],       label:'Marg. %',      required:true},
+    {key:'ff',     search:['ff kr'],         label:'FF kr',        required:false},
+    {key:'ffpct',  search:['ff %'],          label:'FF %',         required:false},
+    {key:'bv',     search:['bruttovinst'],   label:'Bruttovinst',  required:true},
+    {key:'bvpct',  search:['bv %'],          label:'BV %',         required:false}
+  ];
+  var C={},missing=[],warned=[];
+  colDefs.forEach(function(d){
+    var idx=ci.apply(null,d.search);
+    if(idx!==-1){C[d.key]=idx}
+    else if(d.required){missing.push(d.label)}
+    else{warned.push(d.label);C[d.key]=-1}
+  });
+  if(missing.length){showDash();showErr('Saknade obligatoriska kolumner: '+missing.join(', '),true);return}
+  var warnEl=document.getElementById('col-warning');
+  if(warned.length){warnEl.textContent='⚠ Kolumner saknas (sätts till 0): '+warned.join(', ');warnEl.style.display='block'}
+  else{warnEl.style.display='none'}
 
-  function tn(v){var n=parseFloat(String(v).replace(',','.'));return isNaN(n)?0:n}
+  function tn(v){if(v===undefined)return 0;var n=parseFloat(String(v).replace(',','.'));return isNaN(n)?0:n}
   function ts(v){return String(v==null?'':v).trim()}
+  function cell(row,idx){return idx===-1?undefined:row[idx]}
 
   var products=[];
   rows.slice(hi+1).forEach(function(row){
     if(!row||row.length<5)return;
-    var vom=row[C.vom];
+    var vom=cell(row,C.vom);
     if(!vom||isNaN(Number(vom))||Number(vom)===0)return;
-    var ean=ts(row[C.ean]);
+    var ean=ts(cell(row,C.ean));
     if(ean&&!isNaN(+ean))ean=String(Math.round(+ean));
     products.push({
-      vom:String(Math.round(+vom)),kat:ts(row[C.kat]),
-      ean:ean,bnr:ts(row[C.bnr]),ben:ts(row[C.ben]),vara:ts(row[C.vara]),
-      antal:tn(row[C.antal]),forsv:tn(row[C.forsv]),
-      marg:tn(row[C.marg]),margpct:tn(row[C.margpct]),
-      ff:tn(row[C.ff]),ffpct:tn(row[C.ffpct]),
-      bv:tn(row[C.bv]),bvpct:tn(row[C.bvpct])
+      vom:String(Math.round(+vom)),kat:ts(cell(row,C.kat)),
+      ean:ean,bnr:ts(cell(row,C.bnr)),ben:ts(cell(row,C.ben)),vara:ts(cell(row,C.vara)),
+      antal:tn(cell(row,C.antal)),forsv:tn(cell(row,C.forsv)),
+      marg:tn(cell(row,C.marg)),margpct:tn(cell(row,C.margpct)),
+      ff:tn(cell(row,C.ff)),ffpct:tn(cell(row,C.ffpct)),
+      bv:tn(cell(row,C.bv)),bvpct:tn(cell(row,C.bvpct))
     });
   });
 
