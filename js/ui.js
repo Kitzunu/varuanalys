@@ -33,15 +33,15 @@ function buildMetrics(){
   var prio=p.filter(function(x){return x.tier==='Prioritet'}).length;
   var tb=p.filter(function(x){return isExcludedTier(x.tier)}).length;
   document.getElementById('metrics-grid').innerHTML=
-    '<div class="metric"><div class="metric-label">Produkter</div><div class="metric-value">'+p.length+'</div><div class="metric-sub">i rapporten</div></div>'+
-    '<div class="metric"><div class="metric-label">Sålda enheter</div><div class="metric-value">'+totalA.toLocaleString('sv')+'</div><div class="metric-sub">perioden</div></div>'+
-    '<div class="metric m-blue"><div class="metric-label">Försäljningsvärde</div><div class="metric-value">'+Math.round(totalForsv).toLocaleString('sv')+'</div><div class="metric-sub">kr perioden</div></div>'+
-    '<div class="metric m-green"><div class="metric-label">Total marginal</div><div class="metric-value">'+Math.round(totalMarg).toLocaleString('sv')+'</div><div class="metric-sub">kr perioden</div></div>'+
-    '<div class="metric m-green"><div class="metric-label">Marg %</div><div class="metric-value">'+avgMargP.toFixed(1)+'%</div><div class="metric-sub">marg/försäljning</div></div>'+
-    '<div class="metric '+(avgSvP>=2?'m-danger':'')+'"'+'><div class="metric-label">FYS %</div><div class="metric-value">'+avgSvP.toFixed(1)+'%</div><div class="metric-sub">av försäljning</div></div>'+
-    '<div class="metric '+(avgSvP>=2?'m-danger':'')+'"><div class="metric-label">Total FYS</div><div class="metric-value">'+Math.round(totalFF).toLocaleString('sv')+'</div><div class="metric-sub">kr förlorat</div></div>'+
-    '<div class="metric"><div class="metric-label">BV %</div><div class="metric-value">'+avgBvP.toFixed(1)+'%</div><div class="metric-sub">bv/försäljning</div></div>'+
-    '<div class="metric"><div class="metric-label">Total bruttovinst</div><div class="metric-value">'+Math.round(totalBv).toLocaleString('sv')+'</div><div class="metric-sub">kr perioden</div></div>'+
+    '<div class="metric" data-tip="Totalt antal unika produktrader i den importerade rapporten"><div class="metric-label">Produkter</div><div class="metric-value">'+p.length+'</div><div class="metric-sub">i rapporten</div></div>'+
+    '<div class="metric" data-tip="Totalt antal sålda enheter av alla produkter under rapportens period"><div class="metric-label">Sålda enheter</div><div class="metric-value">'+totalA.toLocaleString('sv')+'</div><div class="metric-sub">perioden</div></div>'+
+    '<div class="metric m-blue" data-tip="Total omsättning i kronor – summan av alla produkters försäljningsvärde"><div class="metric-label">Försäljningsvärde</div><div class="metric-value">'+Math.round(totalForsv).toLocaleString('sv')+'</div><div class="metric-sub">kr perioden</div></div>'+
+    '<div class="metric m-green" data-tip="Total marginal i kronor – skillnaden mellan försäljningsvärde och inköpskostnad"><div class="metric-label">Total marginal</div><div class="metric-value">'+Math.round(totalMarg).toLocaleString('sv')+'</div><div class="metric-sub">kr perioden</div></div>'+
+    '<div class="metric m-green" data-tip="Genomsnittlig marginalprocent – total marginal delat med totalt försäljningsvärde"><div class="metric-label">Marg %</div><div class="metric-value">'+avgMargP.toFixed(1)+'%</div><div class="metric-sub">marg/försäljning</div></div>'+
+    '<div class="metric '+(avgSvP>=2?'m-danger':'')+'" data-tip="Fysisk förlust i procent av försäljningsvärdet. Markeras röd vid ≥2%. Inkluderar svinn, stöld och kassation"><div class="metric-label">FYS %</div><div class="metric-value">'+avgSvP.toFixed(1)+'%</div><div class="metric-sub">av försäljning</div></div>'+
+    '<div class="metric '+(avgSvP>=2?'m-danger':'')+'" data-tip="Total fysisk förlust i kronor – summan av allt svinn, stöld och kassation under perioden"><div class="metric-label">Total FYS</div><div class="metric-value">'+Math.round(totalFF).toLocaleString('sv')+'</div><div class="metric-sub">kr förlorat</div></div>'+
+    '<div class="metric" data-tip="Bruttovinstprocent – bruttovinst (marginal minus förluster) delat med försäljningsvärde"><div class="metric-label">BV %</div><div class="metric-value">'+avgBvP.toFixed(1)+'%</div><div class="metric-sub">bv/försäljning</div></div>'+
+    '<div class="metric" data-tip="Total bruttovinst i kronor – marginal minus fysisk förlust för alla produkter"><div class="metric-label">Total bruttovinst</div><div class="metric-value">'+Math.round(totalBv).toLocaleString('sv')+'</div><div class="metric-sub">kr perioden</div></div>'+
     '';
 }
 
@@ -89,34 +89,52 @@ function sortCol(th){
   saveSession();
 }
 
-function renderTable(){
-  var parts=document.getElementById('sort-sel').value.split('|');
-  sortField=parts[0];sortDir=parts[1];
-  var q=document.getElementById('search').value.toLowerCase();
-  var selVoms=getChecked('vom-menu');
-  var selKats=getChecked('kat-menu');
-  document.querySelectorAll('#col-row th').forEach(function(th){
-    th.classList.remove('asc','desc');
-    if(th.dataset.field===sortField)th.classList.add(sortDir==='asc'?'asc':'desc');
-  });
-  var flt=allProducts.filter(function(p){
-    if(activeTier!=='all'&&p.tier!==activeTier)return false;
-    if(selVoms.length&&selVoms.indexOf(p.vom)===-1)return false;
-    if(selKats.length&&selKats.indexOf(p.kat)===-1)return false;
-    if(q&&!p.ben.toLowerCase().includes(q)&&!p.vara.toLowerCase().includes(q)&&!p.ean.includes(q)&&!p.bnr.includes(q))return false;
-    return true;
-  });
-  flt.sort(function(a,b){
-    var va=a[sortField],vb=b[sortField];
-    if(typeof va==='string')return sortDir==='asc'?va.localeCompare(vb,'sv'):vb.localeCompare(va,'sv');
-    return sortDir==='asc'?va-vb:vb-va;
-  });
-  document.getElementById('row-count').textContent=flt.length+' produkter';
+function totalPages(){return pageSize===0?1:Math.max(1,Math.ceil(filteredProducts.length/pageSize))}
+
+function renderPagination(){
+  var total=filteredProducts.length;
+  var tp=totalPages();
+  if(currentPage>tp)currentPage=tp;
+  var pg=document.getElementById('pagination');
+  if(total<=50&&pageSize===50){pg.style.display='none';return}
+  pg.style.display='flex';
+  var start=pageSize===0?1:(currentPage-1)*pageSize+1;
+  var end=pageSize===0?total:Math.min(currentPage*pageSize,total);
+  document.getElementById('page-info').textContent=start+'–'+end+' av '+total;
+  document.getElementById('page-first').disabled=currentPage<=1;
+  document.getElementById('page-prev').disabled=currentPage<=1;
+  document.getElementById('page-next').disabled=currentPage>=tp;
+  document.getElementById('page-last').disabled=currentPage>=tp;
+  var nums='',lo=Math.max(1,currentPage-2),hi=Math.min(tp,currentPage+2);
+  for(var i=lo;i<=hi;i++)nums+='<button class="page-btn'+(i===currentPage?' active':'')+'" onclick="goPage('+i+')">'+i+'</button>';
+  document.getElementById('page-nums').innerHTML=nums;
+}
+
+function goPage(n){
+  var tp=totalPages();
+  currentPage=Math.max(1,Math.min(n,tp));
+  renderPageRows();
+  renderPagination();
+  var scroll=document.getElementById('prod-scroll');
+  if(scroll)scroll.scrollTop=0;
+}
+
+function changePageSize(v){
+  pageSize=parseInt(v);
+  currentPage=1;
+  renderPageRows();
+  renderPagination();
+}
+
+function renderPageRows(){
   function fmt(n){return n===0?'–':Math.round(n).toLocaleString('sv')}
   function fmtP(n){return n===0?'–':n.toFixed(1)+'%'}
   var tb=document.getElementById('table-body');
-  if(!flt.length){tb.innerHTML='<tr><td colspan="16" style="text-align:center;padding:48px;color:var(--mut)">Inga produkter matchar</td></tr>';return}
-  tb.innerHTML=flt.map(function(p){
+  if(!filteredProducts.length){tb.innerHTML='<tr><td colspan="16" style="text-align:center;padding:48px;color:var(--mut)">Inga produkter matchar</td></tr>';return}
+  var start=pageSize===0?0:(currentPage-1)*pageSize;
+  var end=pageSize===0?filteredProducts.length:Math.min(start+pageSize,filteredProducts.length);
+  var page=filteredProducts.slice(start,end);
+  tb.innerHTML=page.map(function(p){
     var bw=Math.round(p.score*.55);
     var bvC=p.bv<0?'cr':p.bv>5000?'cg':'';
     var ffRatioDisp=p.ffpct>0?p.ffpct:(p.forsv>0?p.ff/p.forsv*100:0);
@@ -147,6 +165,34 @@ function renderTable(){
         '><div class="sb" style="width:'+bw+'px;background:'+BAR_COLOR[p.tier]+';opacity:.5"></div><span class="sn">'+p.score+'</span></div><span class="print-score" style="display:none">'+p.score+'</span></td>'+
       '</tr>';
   }).join('');
+}
+
+function renderTable(){
+  var parts=document.getElementById('sort-sel').value.split('|');
+  sortField=parts[0];sortDir=parts[1];
+  var q=document.getElementById('search').value.toLowerCase();
+  var selVoms=getChecked('vom-menu');
+  var selKats=getChecked('kat-menu');
+  document.querySelectorAll('#col-row th').forEach(function(th){
+    th.classList.remove('asc','desc');
+    if(th.dataset.field===sortField)th.classList.add(sortDir==='asc'?'asc':'desc');
+  });
+  filteredProducts=allProducts.filter(function(p){
+    if(activeTier!=='all'&&p.tier!==activeTier)return false;
+    if(selVoms.length&&selVoms.indexOf(p.vom)===-1)return false;
+    if(selKats.length&&selKats.indexOf(p.kat)===-1)return false;
+    if(q&&!p.ben.toLowerCase().includes(q)&&!p.vara.toLowerCase().includes(q)&&!p.ean.includes(q)&&!p.bnr.includes(q))return false;
+    return true;
+  });
+  filteredProducts.sort(function(a,b){
+    var va=a[sortField],vb=b[sortField];
+    if(typeof va==='string')return sortDir==='asc'?va.localeCompare(vb,'sv'):vb.localeCompare(va,'sv');
+    return sortDir==='asc'?va-vb:vb-va;
+  });
+  document.getElementById('row-count').textContent=filteredProducts.length+' produkter';
+  currentPage=1;
+  renderPageRows();
+  renderPagination();
 }
 
 /* Multi-select dropdown helpers */
@@ -218,6 +264,42 @@ function toggleDrop(dropId){
   document.querySelectorAll('.multi-menu.open').forEach(function(m){m.classList.remove('open')});
   if(!isOpen)menu.classList.add('open');
 }
+
+/* Help tooltips */
+
+(function(){
+  var tip=document.getElementById('help-tip');
+  var titleEl=tip.querySelector('.ht-title');
+  var bodyEl=tip.querySelector('.ht-body');
+  var hideTimer=null;
+
+  function show(e){
+    var el=e.target.closest('[data-tip]');
+    if(!el)return;
+    clearTimeout(hideTimer);
+    var text=el.dataset.tip;
+    var labelEl=el.querySelector('.metric-label')||el.querySelector('.tt-label');
+    var label=labelEl?labelEl.textContent.trim():el.textContent.trim().replace(/\s+/g,' ');
+    if(label.length>40)label=label.substring(0,37)+'…';
+    titleEl.textContent=label;
+    bodyEl.textContent=text;
+    tip.style.display='block';
+    var rect=el.getBoundingClientRect();
+    var tw=tip.offsetWidth,th=tip.offsetHeight;
+    var x=rect.left+(rect.width/2)-(tw/2);
+    var y=rect.bottom+8;
+    if(x<8)x=8;
+    if(x+tw>window.innerWidth-8)x=window.innerWidth-tw-8;
+    if(y+th>window.innerHeight-8)y=rect.top-th-8;
+    tip.style.left=x+'px';
+    tip.style.top=y+'px';
+  }
+
+  function hide(){hideTimer=setTimeout(function(){tip.style.display='none'},80)}
+
+  document.addEventListener('mouseenter',function(e){if(e.target.closest('[data-tip]'))show(e)},true);
+  document.addEventListener('mouseleave',function(e){if(e.target.closest('[data-tip]'))hide()},true);
+})();
 
 /* Score tooltip */
 

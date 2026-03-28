@@ -43,11 +43,11 @@
       <div class="topbar-period" id="period-disp"></div>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
-      <button class="btn-new btn-hl" id="hl-btn" onclick="toggleHighlight()">◐ Highlight</button>
-      <button class="btn-new" id="theme-toggle-dash" onclick="toggleTheme()">☀ Ljust</button>
-      <button class="btn-new" onclick="exportExcel()">↓ Excel</button>
-      <button class="btn-new" onclick="exportPDF()">↓ PDF</button>
-      <button class="btn-new" onclick="resetApp()">+ Ny fil</button>
+      <button class="btn-new btn-hl" id="hl-btn" onclick="toggleHighlight()" data-tip="Färgmarkera rader efter nivå – gör det lättare att visuellt skilja grupper åt">◐ Highlight</button>
+      <button class="btn-new" id="theme-toggle-dash" onclick="toggleTheme()" data-tip="Växla mellan mörkt och ljust tema">☀ Ljust</button>
+      <button class="btn-new" onclick="exportExcel()" data-tip="Exportera alla produkter till en formaterad Excel-fil">↓ Excel</button>
+      <button class="btn-new" onclick="exportPDF()" data-tip="Exportera sammanfattningar och tabeller till PDF">↓ PDF</button>
+      <button class="btn-new" onclick="resetApp()" data-tip="Stäng nuvarande rapport och ladda en ny fil">+ Ny fil</button>
     </div>
   </div>
 
@@ -81,13 +81,13 @@
     </div>
 
     <div class="view-tabs">
-      <button class="view-tab active" onclick="setView('products')">Produkter</button>
-      <button class="view-tab" onclick="setView('vom')">Sammanfattning per VOM</button>
-      <button class="view-tab" onclick="setView('kat')">Sammanfattning per KAT</button>
-      <button class="view-tab" onclick="setView('movers')">Top / Bottom</button>
-      <button class="view-tab" onclick="setView('svinn')">Svinn watchlist</button>
-      <button class="view-tab" onclick="setView('katcomp')">KAT jämförelse</button>
-      <button class="view-tab" onclick="setView('charts')">Diagram</button>
+      <button class="view-tab active" onclick="setView('products')" data-tip="Fullständig produkttabell med alla mätvärden, filtrering och sortering">Produkter</button>
+      <button class="view-tab" onclick="setView('vom')" data-tip="Aggregerad sammanfattning grupperad per varuområde (VOM)">Sammanfattning per VOM</button>
+      <button class="view-tab" onclick="setView('kat')" data-tip="Aggregerad sammanfattning grupperad per kategori (KAT)">Sammanfattning per KAT</button>
+      <button class="view-tab" onclick="setView('movers')" data-tip="Identifierar produkter med potential, dolda pärlor och de med lägst poäng">Top / Bottom</button>
+      <button class="view-tab" onclick="setView('svinn')" data-tip="Produkter med hög fysisk förlust (FYS) som bör ses över">Svinn watchlist</button>
+      <button class="view-tab" onclick="setView('katcomp')" data-tip="Jämför nyckeltal mellan kategorier sida vid sida">KAT jämförelse</button>
+      <button class="view-tab" onclick="setView('charts')" data-tip="Visuella diagram över försäljning, marginaler och fördelning">Diagram</button>
     </div>
 
     <!-- Charts view -->
@@ -306,26 +306,44 @@
           <table>
             <thead>
               <tr id="col-row">
-                <th class="sortable" data-field="vom" onclick="sortCol(this)">VOM</th>
-                <th class="sortable" data-field="kat" onclick="sortCol(this)">KAT</th>
-                <th class="sortable" data-field="ean" onclick="sortCol(this)">EAN/PLU</th>
-                <th class="sortable" data-field="bnr" onclick="sortCol(this)">BNR</th>
-                <th class="sortable" data-field="ben" onclick="sortCol(this)">Produkt</th>
-                <th class="sortable" data-field="vara" onclick="sortCol(this)">Producent</th>
-                <th class="sortable nr" data-field="antal" onclick="sortCol(this)">Antal</th>
-                <th class="sortable nr" data-field="forsv" onclick="sortCol(this)">Förs.värde kr</th>
-                <th class="sortable nr" data-field="marg" onclick="sortCol(this)">Marginal kr</th>
-                <th class="sortable nr" data-field="margpct" onclick="sortCol(this)">Marg %</th>
-                <th class="sortable nr" data-field="ff" onclick="sortCol(this)">FYS</th>
-                <th class="sortable nr" data-field="ffpct" onclick="sortCol(this)">FYS %</th>
-                <th class="sortable nr" data-field="bv" onclick="sortCol(this)">Bruttovinst</th>
-                <th class="sortable nr" data-field="bvpct" onclick="sortCol(this)">BV %</th>
-                <th>Nivå</th>
-                <th class="sortable nr" data-field="score" onclick="sortCol(this)">Poäng</th>
+                <th class="sortable" data-field="vom" data-tip="Varuområde – butikens avdelning eller zon där produkten säljs" onclick="sortCol(this)">VOM</th>
+                <th class="sortable" data-field="kat" data-tip="Kategori – produktgrupp inom varuområdet" onclick="sortCol(this)">KAT</th>
+                <th class="sortable" data-field="ean" data-tip="Streckkod (EAN) eller butikens PLU-nummer för produkten" onclick="sortCol(this)">EAN/PLU</th>
+                <th class="sortable" data-field="bnr" data-tip="Butiksnummer – internt artikelnummer" onclick="sortCol(this)">BNR</th>
+                <th class="sortable" data-field="ben" data-tip="Produktens benämning/namn" onclick="sortCol(this)">Produkt</th>
+                <th class="sortable" data-field="vara" data-tip="Varutext – leverantör eller producent" onclick="sortCol(this)">Producent</th>
+                <th class="sortable nr" data-field="antal" data-tip="Antal sålda enheter under perioden" onclick="sortCol(this)">Antal</th>
+                <th class="sortable nr" data-field="forsv" data-tip="Försäljningsvärde i kronor – total omsättning för produkten" onclick="sortCol(this)">Förs.värde kr</th>
+                <th class="sortable nr" data-field="marg" data-tip="Marginal i kronor – skillnad mellan försäljningspris och inköpspris" onclick="sortCol(this)">Marginal kr</th>
+                <th class="sortable nr" data-field="margpct" data-tip="Marginalprocent – marginal som andel av försäljningsvärdet. Grön ≥32%, gul 30–32%, röd &lt;30%" onclick="sortCol(this)">Marg %</th>
+                <th class="sortable nr" data-field="ff" data-tip="Fysisk förlust (svinn) i kronor – varor förlorade genom skador, stöld eller kassation" onclick="sortCol(this)">FYS</th>
+                <th class="sortable nr" data-field="ffpct" data-tip="Fysisk förlust i procent av försäljningsvärdet. Röd vid ≥2%" onclick="sortCol(this)">FYS %</th>
+                <th class="sortable nr" data-field="bv" data-tip="Bruttovinst i kronor – marginal minus fysisk förlust" onclick="sortCol(this)">Bruttovinst</th>
+                <th class="sortable nr" data-field="bvpct" data-tip="Bruttovinstprocent – bruttovinst som andel av försäljningsvärdet. Röd &lt;0%, gul 0–10%" onclick="sortCol(this)">BV %</th>
+                <th data-tip="Produktens rangordning inom sin kategori baserat på poäng">Nivå</th>
+                <th class="sortable nr" data-field="score" data-tip="Sammanvägt poäng baserat på volym, marginal, marginal%, svinn och bruttovinst. Jämförs relativt inom samma KAT" onclick="sortCol(this)">Poäng</th>
               </tr>
             </thead>
             <tbody id="table-body"></tbody>
           </table>
+        </div>
+      </div>
+      <div class="pagination" id="pagination">
+        <div class="page-info">
+          <span id="page-info"></span>
+          <label>Rader: <select id="page-size" onchange="changePageSize(this.value)">
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
+            <option value="200">200</option>
+            <option value="0">Alla</option>
+          </select></label>
+        </div>
+        <div class="page-btns">
+          <button class="page-btn" id="page-first" onclick="goPage(1)">«</button>
+          <button class="page-btn" id="page-prev" onclick="goPage(currentPage-1)">‹</button>
+          <span class="page-nums" id="page-nums"></span>
+          <button class="page-btn" id="page-next" onclick="goPage(currentPage+1)">›</button>
+          <button class="page-btn" id="page-last" onclick="goPage(totalPages())">»</button>
         </div>
       </div>
     </div>
@@ -385,6 +403,7 @@
   </div>
 </div>
 
+<div id="help-tip"><div class="ht-title"></div><div class="ht-body"></div></div>
 <div id="score-tooltip">
   <div class="tt-title">Poängfördelning</div>
   <div class="tt-row"><span class="tt-label">Volym (40%)</span><span class="tt-val" id="tt-vol">–</span></div>
@@ -396,9 +415,9 @@
 </div>
 
 <!-- Scripts loaded in dependency order -->
-<script src="js/constants.js"></script>
+<script src="js/constants.js?v=2"></script>
 <script src="js/data.js"></script>
-<script src="js/ui.js"></script>
+<script src="js/ui.js?v=2"></script>
 <script src="js/views.js"></script>
 <script src="js/export.js"></script>
 <script src="js/charts.js"></script>

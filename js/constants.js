@@ -10,6 +10,9 @@ var highlightMode=false;
 var currentView='products';
 var sumSortState={};
 var katcompCurrentKat=null;
+var currentPage=1;
+var pageSize=50;
+var filteredProducts=[];
 
 /* Tier configuration */
 var TIER_ORDER={Prioritet:0,Bra:1,Genomsnittlig:2,'Låg':3,'Ta bort':4,Systemfel:5,Ignorerad:6,'Marg 99%':7,Kategoriförsäljning:8,Tobak:9};
