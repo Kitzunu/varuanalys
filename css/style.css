@@ -111,7 +111,7 @@ html.light .bg-p{background:rgba(74,122,0,.12);border-color:rgba(74,122,0,.22)}
 .metric-value{font-family:var(--disp);font-size:22px;font-weight:700;line-height:1}
 .metric-sub{font-size:10px;color:var(--mut);margin-top:4px}
 .m-accent{border-color:rgba(200,240,96,.25);background:rgba(200,240,96,.04)} .m-accent .metric-value{color:var(--acc)}
-.m-danger{border-color:rgba(240,96,96,.2)} .m-danger .metric-value{color:var(--red)}
+.m-danger{border-color:rgba(240,96,96,.25);background:rgba(240,96,96,.04)} .m-danger .metric-value{color:var(--red)}
 .m-blue{border-color:rgba(96,212,240,.2)} .m-blue .metric-value{color:var(--acc2)}
 .m-green{border-color:rgba(96,212,160,.25);background:rgba(96,212,160,.04)} .m-green .metric-value{color:var(--grn)}
 .m-amber{border-color:rgba(240,184,96,.25);background:rgba(240,184,96,.04)} .m-amber .metric-value{color:var(--amb)}
