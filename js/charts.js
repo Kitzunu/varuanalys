@@ -10,6 +10,17 @@ function buildCharts(){
   // Defer briefly so container is visible and has layout dimensions
   setTimeout(function(){
     var type=document.getElementById('chart-type-sel').value;
+    var canvasWrap=document.getElementById('main-chart').parentElement;
+    var heatWrap=document.getElementById('heatmap-wrap');
+    if(type==='heatmap'){
+      destroyChart();
+      canvasWrap.style.display='none';
+      heatWrap.style.display='block';
+      buildHeatmapChart();
+      return;
+    }
+    canvasWrap.style.display='block';
+    heatWrap.style.display='none';
     if(type==='quadrant')buildQuadrantChart();
     else if(type==='scatter')buildScatterChart();
     else if(type==='katbar')buildKatBarChart();
@@ -321,6 +332,89 @@ function buildVomBarChart(){
       }
     }
   });
+}
+
+/* Heatmap: KAT × Metric matrix */
+function buildHeatmapChart(){
+  var T=getThresholds();
+  var katG={};
+  allProducts.forEach(function(p){
+    if(!p.kat||isExcludedTier(p.tier))return;
+    if(!katG[p.kat])katG[p.kat]={antal:0,forsv:0,marg:0,ff:0,bv:0,count:0};
+    var g=katG[p.kat];g.antal+=p.antal;g.forsv+=p.forsv;g.marg+=p.marg;g.ff+=p.ff;g.bv+=p.bv;g.count++;
+  });
+  var kats=Object.keys(katG).map(function(k){
+    var g=katG[k];
+    return{kat:k,prods:g.count,antal:g.antal,forsv:g.forsv,
+      margPct:g.forsv>0?g.marg/g.forsv*100:0,
+      fysPct:g.forsv>0?g.ff/g.forsv*100:0,
+      bvPct:g.forsv>0?g.bv/g.forsv*100:0,
+      bvKr:g.bv};
+  }).filter(function(k){return k.forsv>0}).sort(function(a,b){return b.forsv-a.forsv}).slice(0,30);
+
+  if(!kats.length){document.getElementById('heatmap-wrap').innerHTML='<div style="text-align:center;padding:40px;color:var(--mut)">Ingen data</div>';return}
+
+  var metrics=[
+    {key:'antal',label:'Antal',fmt:function(v){return Math.round(v).toLocaleString('sv')},mode:'higher-better'},
+    {key:'forsv',label:'F\u00f6rs.v\u00e4rde',fmt:function(v){return Math.round(v/1000)+'k'},mode:'higher-better'},
+    {key:'margPct',label:'Marg %',fmt:function(v){return v.toFixed(1)+'%'},mode:'margin'},
+    {key:'fysPct',label:'FYS %',fmt:function(v){return v.toFixed(1)+'%'},mode:'lower-better'},
+    {key:'bvPct',label:'BV %',fmt:function(v){return v.toFixed(1)+'%'},mode:'higher-better'},
+    {key:'bvKr',label:'BV kr',fmt:function(v){return Math.round(v/1000)+'k'},mode:'higher-better'}
+  ];
+
+  // Compute min/max per metric for color scaling
+  var ranges={};
+  metrics.forEach(function(m){
+    var vals=kats.map(function(k){return k[m.key]});
+    ranges[m.key]={min:Math.min.apply(null,vals),max:Math.max.apply(null,vals)};
+  });
+
+  function heatColor(val,metric){
+    var r=ranges[metric.key];
+    if(r.max===r.min)return 'var(--surf2)';
+    var pct=(val-r.min)/(r.max-r.min); // 0-1
+
+    if(metric.mode==='margin'){
+      // Use threshold-based coloring
+      if(val>=T.margGreen)return 'rgba(96,212,160,'+(0.15+pct*0.45)+')';
+      if(val>=T.margAmber)return 'rgba(240,184,96,'+(0.15+0.3)+')';
+      return 'rgba(240,96,96,'+(0.15+(1-pct)*0.4)+')';
+    }
+    if(metric.mode==='lower-better'){
+      // Invert: low = green, high = red
+      if(val>=T.fysRed)return 'rgba(240,96,96,'+(0.15+pct*0.45)+')';
+      return 'rgba(96,212,160,'+(0.15+(1-pct)*0.35)+')';
+    }
+    // higher-better: low = faint, high = strong green
+    return 'rgba(96,212,240,'+(0.08+pct*0.45)+')';
+  }
+
+  function textColor(val,metric){
+    if(metric.mode==='margin'){
+      return val>=T.margGreen?'var(--grn)':val>=T.margAmber?'var(--amb)':'var(--red)';
+    }
+    if(metric.mode==='lower-better'){
+      return val>=T.fysRed?'var(--red)':'var(--txt)';
+    }
+    return 'var(--txt)';
+  }
+
+  var html='<table class="heatmap-table"><thead><tr><th class="heatmap-corner">KAT</th>';
+  metrics.forEach(function(m){html+='<th class="heatmap-th">'+m.label+'</th>'});
+  html+='</tr></thead><tbody>';
+  kats.forEach(function(k){
+    var name=KAT_NAMES[k.kat]||'';
+    var shortName=name.length>22?name.substring(0,20)+'\u2026':name;
+    html+='<tr><td class="heatmap-label" title="'+k.kat+(name?' \u2013 '+name:'')+'"><span class="heatmap-kat-id">'+k.kat+'</span> '+shortName+'</td>';
+    metrics.forEach(function(m){
+      var v=k[m.key];
+      html+='<td class="heatmap-cell" style="background:'+heatColor(v,m)+';color:'+textColor(v,m)+'">'+m.fmt(v)+'</td>';
+    });
+    html+='</tr>';
+  });
+  html+='</tbody></table>';
+  document.getElementById('heatmap-wrap').innerHTML=html;
 }
 
 /* Doughnut: Tier distribution */

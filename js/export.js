@@ -194,6 +194,7 @@ function exportExcel(){
   var period=document.getElementById('period-disp').textContent.replace(/[^a-zA-Z0-9åäöÅÄÖ\-_]/g,'_');
   var wbOut=typeof XLSXStyle!=='undefined'?XLSXStyle:XLSX;
   wbOut.writeFile(wb,'Bruttovinst_'+(period||'export')+'.xlsx',{cellStyles:true,bookType:'xlsx'});
+  showToast('Excel exporterad med '+allProducts.length+' produkter','success');
 }
 
 
@@ -266,6 +267,7 @@ function exportPDF(){
     shown.push(el);
   }
 
+  showToast('PDF f\u00f6rbereds f\u00f6r utskrift...','info');
   window.print();
   setTimeout(function(){
     pd.textContent=orig;

@@ -139,6 +139,7 @@ function processData(rows){
   showDash();buildMetrics();buildTabs();renderTable();buildSummaries();buildAlerts();
   requestAnimationFrame(setTableHeight);
   saveSession();
+  showToast(allProducts.length+' produkter importerade fr\u00e5n '+fileName,'success');
 }
 
 function getWeights(){
@@ -244,4 +245,5 @@ function resetAllSettings(){
   document.getElementById('th-bv-amber-pct').value=10;
   document.getElementById('th-marg-cap').value=60;
   resetWeights();
+  showToast('Alla inst\u00e4llningar \u00e5terst\u00e4llda till standard','success');
 }

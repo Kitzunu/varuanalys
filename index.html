@@ -8,7 +8,7 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-<link rel="stylesheet" href="css/style.css?v=20260328c">
+<link rel="stylesheet" href="css/style.css?v=20260328d">
 </head>
 <body>
 
@@ -97,7 +97,14 @@
       <button class="view-tab" onclick="setView('svinn')" data-tip="Produkter med hög fysisk förlust (FYS) som bör ses över">Svinn watchlist</button>
       <button class="view-tab" onclick="setView('katcomp')" data-tip="Jämför nyckeltal mellan kategorier sida vid sida">KAT jämförelse</button>
       <button class="view-tab" onclick="setView('charts')" data-tip="Visuella diagram över försäljning, marginaler och fördelning">Diagram</button>
+      <button class="view-tab" onclick="setView('report')" data-tip="Automatiskt genererad sammanfattning av analysen">📋 Rapport</button>
       <button class="view-tab" onclick="setView('alerts')" data-tip="Automatiskt upptäckta varningar och avvikelser">⚠ Varningar <span class="alert-count" id="alert-count-tab" style="display:none"></span></button>
+    </div>
+
+    <!-- Report view -->
+    <div id="view-report" class="summary-section">
+      <div class="print-section-title">Sammanfattningsrapport</div>
+      <div id="report-container"></div>
     </div>
 
     <!-- Alerts view -->
@@ -121,12 +128,14 @@
           <option value="scatter">Scatter: Marginal % vs Volym</option>
           <option value="katbar">Bruttovinst per KAT (topp 15)</option>
           <option value="vombar">Bruttovinst per VOM</option>
+          <option value="heatmap">Heatmap: KAT × Nyckeltal</option>
           <option value="tier">Fördelning per nivå</option>
         </select>
       </div>
       <div style="background:var(--surf);border:1px solid var(--brd);border-radius:12px;padding:20px;position:relative;max-width:1200px;height:520px">
         <canvas id="main-chart"></canvas>
       </div>
+      <div id="heatmap-wrap" style="display:none;background:var(--surf);border:1px solid var(--brd);border-radius:12px;padding:20px;max-width:1200px;overflow-x:auto"></div>
     </div>
 
     <!-- Movers view -->
@@ -521,12 +530,12 @@
 </div>
 
 <!-- Scripts loaded in dependency order -->
-<script src="js/constants.js?v=20260328c"></script>
-<script src="js/data.js?v=20260328c"></script>
-<script src="js/ui.js?v=20260328c"></script>
-<script src="js/views.js?v=20260328c"></script>
-<script src="js/export.js?v=20260328c"></script>
-<script src="js/charts.js?v=20260328c"></script>
-<script src="js/app.js?v=20260328c"></script>
+<script src="js/constants.js?v=20260328d"></script>
+<script src="js/data.js?v=20260328d"></script>
+<script src="js/ui.js?v=20260328d"></script>
+<script src="js/views.js?v=20260328d"></script>
+<script src="js/export.js?v=20260328d"></script>
+<script src="js/charts.js?v=20260328d"></script>
+<script src="js/app.js?v=20260328d"></script>
 </body>
 </html>

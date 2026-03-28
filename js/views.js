@@ -352,6 +352,197 @@ function buildKatComp(chosenKat){
   requestAnimationFrame(setTableHeight);
 }
 
+/* Auto-generated Summary Report */
+
+function buildReport(){
+  var p=allProducts;
+  var T=getThresholds();
+  var active=p.filter(function(x){return !isExcludedTier(x.tier)&&x.antal>0});
+  var excluded=p.filter(function(x){return isExcludedTier(x.tier)});
+  var totalA=p.reduce(function(s,x){return s+x.antal},0);
+  var totalForsv=p.reduce(function(s,x){return s+x.forsv},0);
+  var totalMarg=p.reduce(function(s,x){return s+x.marg},0);
+  var totalFF=p.reduce(function(s,x){return s+x.ff},0);
+  var totalBv=p.reduce(function(s,x){return s+x.bv},0);
+  var avgMargP=totalForsv>0?totalMarg/totalForsv*100:0;
+  var avgFysP=totalForsv>0?totalFF/totalForsv*100:0;
+  var avgBvP=totalForsv>0?totalBv/totalForsv*100:0;
+  function fmt(n){return Math.round(n).toLocaleString('sv')}
+  function fmtP(n){return n.toFixed(1)+'%'}
+  var period=document.getElementById('period-disp').textContent||'Ej angiven';
+
+  // Tier counts
+  var tiers={};
+  p.forEach(function(x){tiers[x.tier]=(tiers[x.tier]||0)+1});
+  var prio=tiers['Prioritet']||0,bra=tiers['Bra']||0,genomsnittlig=tiers['Genomsnittlig']||0,lag=tiers['L\u00e5g']||0,tabort=tiers['Ta bort']||0;
+
+  // Top 5 products by score
+  var top5=active.slice().sort(function(a,b){return b.score-a.score}).slice(0,5);
+
+  // Worst 5 by BV
+  var worst5bv=active.slice().sort(function(a,b){return a.bv-b.bv}).slice(0,5);
+
+  // Top svinn products
+  var topSvinn=active.filter(function(x){return x.ff>0}).sort(function(a,b){return b.ff-a.ff}).slice(0,5);
+
+  // Best KAT by BV
+  var katG={};
+  active.forEach(function(x){
+    var k=x.kat||'\u2013';
+    if(!katG[k])katG[k]={bv:0,forsv:0,marg:0,ff:0,count:0};
+    katG[k].bv+=x.bv;katG[k].forsv+=x.forsv;katG[k].marg+=x.marg;katG[k].ff+=x.ff;katG[k].count++;
+  });
+  var katArr=Object.keys(katG).map(function(k){
+    var g=katG[k];
+    return{kat:k,bv:g.bv,margPct:g.forsv>0?g.marg/g.forsv*100:0,fysPct:g.forsv>0?g.ff/g.forsv*100:0,count:g.count};
+  });
+  var bestKat=katArr.slice().sort(function(a,b){return b.bv-a.bv}).slice(0,5);
+  var worstKat=katArr.slice().sort(function(a,b){return a.bv-b.bv}).slice(0,5);
+  var highFysKat=katArr.filter(function(k){return k.fysPct>=T.fysRed}).sort(function(a,b){return b.fysPct-a.fysPct}).slice(0,5);
+
+  // Negative margin count
+  var negMargCount=active.filter(function(x){return x.margpct<0}).length;
+  var negBvCount=active.filter(function(x){return x.bv<0}).length;
+
+  // Margin assessment
+  var margStatus=avgMargP>=T.margGreen?'bra':avgMargP>=T.margAmber?'acceptabel':'under m\u00e5l';
+  var margColor=avgMargP>=T.margGreen?'var(--grn)':avgMargP>=T.margAmber?'var(--amb)':'var(--red)';
+  var fysStatus=avgFysP>=T.fysRed?'h\u00f6g':'acceptabel';
+
+  function prodRow(x,showRank){
+    var mpC=x.margpct>=T.margGreen?'cg':x.margpct>=T.margAmber?'ca':x.margpct>0?'cr':'';
+    return '<tr>'+
+      (showRank?'<td class="nr" style="color:var(--mut)">'+(showRank)+'</td>':'')+
+      '<td style="font-size:11px;max-width:180px">'+x.ben+'</td>'+
+      '<td class="mc">'+x.kat+(KAT_NAMES[x.kat]?' <span class="mc-name" style="display:inline">'+KAT_NAMES[x.kat]+'</span>':'')+'</td>'+
+      '<td class="nr">'+fmt(x.antal)+'</td>'+
+      '<td class="nr '+mpC+'">'+fmtP(x.margpct)+'</td>'+
+      '<td class="nr">'+fmt(x.bv)+' kr</td>'+
+      '<td class="nr" style="color:var(--mut)">'+x.score+'</td>'+
+      '<td><span class="badge '+TIER_BADGE[x.tier]+'" style="font-size:8px">'+x.tier+'</span></td></tr>';
+  }
+
+  var html='';
+
+  // Header
+  html+='<div class="report-header">'+
+    '<div class="report-title">Sammanfattningsrapport</div>'+
+    '<div class="report-meta">Fil: <strong>'+fileName+'</strong> \u00b7 Period: <strong>'+period+'</strong> \u00b7 Genererad: <strong>'+new Date().toLocaleDateString('sv')+'</strong></div>'+
+  '</div>';
+
+  // Executive summary text
+  html+='<div class="report-section"><div class="report-section-title">\ud83d\udcca \u00d6versikt</div>';
+  html+='<div class="report-text">'+
+    'Rapporten inneh\u00e5ller <strong>'+p.length+'</strong> produkter varav <strong>'+active.length+'</strong> \u00e4r aktiva. '+
+    'Totalt s\u00e5ldes <strong>'+fmt(totalA)+'</strong> enheter till ett f\u00f6rs\u00e4ljningsv\u00e4rde p\u00e5 <strong>'+fmt(totalForsv)+' kr</strong>. '+
+    'Den genomsnittliga marginalen \u00e4r <strong style="color:'+margColor+'">'+fmtP(avgMargP)+'</strong> vilket bed\u00f6ms som <strong style="color:'+margColor+'">'+margStatus+'</strong> '+
+    '(gr\u00f6n \u2265'+T.margGreen+'%, gul \u2265'+T.margAmber+'%). '+
+    'Total bruttovinst uppg\u00e5r till <strong>'+fmt(totalBv)+' kr</strong> (BV '+fmtP(avgBvP)+'). '+
+    'Fysisk f\u00f6rlust (FYS) \u00e4r <strong>'+fmt(totalFF)+' kr</strong> ('+fmtP(avgFysP)+'), '+
+    'vilket bed\u00f6ms som <strong>'+(avgFysP>=T.fysRed?'<span style="color:var(--red)">h\u00f6g</span>':'<span style="color:var(--grn)">acceptabel</span>')+'</strong>.'+
+  '</div></div>';
+
+  // Distribution
+  html+='<div class="report-section"><div class="report-section-title">\ud83c\udfaf F\u00f6rdelning per niv\u00e5</div>';
+  html+='<div class="report-bars">';
+  var tierBars=[
+    {label:'Prioritet',count:prio,color:'var(--acc)',pct:p.length>0?(prio/p.length*100):0},
+    {label:'Bra',count:bra,color:'var(--acc2)',pct:p.length>0?(bra/p.length*100):0},
+    {label:'Genomsnittlig',count:genomsnittlig,color:'#888',pct:p.length>0?(genomsnittlig/p.length*100):0},
+    {label:'L\u00e5g',count:lag,color:'var(--amb)',pct:p.length>0?(lag/p.length*100):0},
+    {label:'Ta bort',count:tabort,color:'var(--red)',pct:p.length>0?(tabort/p.length*100):0},
+    {label:'Exkluderade',count:excluded.length,color:'var(--mut)',pct:p.length>0?(excluded.length/p.length*100):0}
+  ];
+  tierBars.forEach(function(t){
+    if(!t.count)return;
+    html+='<div class="report-bar-row">'+
+      '<span class="report-bar-label" style="color:'+t.color+'">'+t.label+'</span>'+
+      '<div class="report-bar-track"><div class="report-bar-fill" style="width:'+t.pct+'%;background:'+t.color+'"></div></div>'+
+      '<span class="report-bar-val">'+t.count+' ('+t.pct.toFixed(0)+'%)</span></div>';
+  });
+  html+='</div></div>';
+
+  // Key findings
+  html+='<div class="report-section"><div class="report-section-title">\ud83d\udd0d Nyckelinsikter</div>';
+  html+='<div class="report-findings">';
+  var findings=[];
+  if(negMargCount>0)findings.push({icon:'\ud83d\udd34',text:'<strong>'+negMargCount+'</strong> produkter har negativ marginal och genererar f\u00f6rlust vid varje f\u00f6rs\u00e4ljning.',sev:'danger'});
+  if(negBvCount>0)findings.push({icon:'\ud83d\udcb8',text:'<strong>'+negBvCount+'</strong> produkter har negativ bruttovinst (marginalen \u00e4ts upp av svinn).',sev:'danger'});
+  if(avgFysP>=T.fysRed)findings.push({icon:'\ud83d\uddd1',text:'Den genomsnittliga FYS-procenten (<strong>'+fmtP(avgFysP)+'</strong>) \u00f6verstiger gr\u00e4nsv\u00e4rdet p\u00e5 '+T.fysRed+'%.',sev:'warning'});
+  if(highFysKat.length)findings.push({icon:'\u26a0',text:'<strong>'+highFysKat.length+'</strong> kategorier har FYS \u00f6ver '+T.fysRed+'%: '+highFysKat.map(function(k){return 'KAT '+k.kat+' ('+k.fysPct.toFixed(1)+'%)'}).join(', ')+'.',sev:'warning'});
+  if(prio>0)findings.push({icon:'\u2b50',text:'<strong>'+prio+'</strong> produkter klassas som Prioritet \u2013 dessa driver f\u00f6rs\u00e4ljningen mest.',sev:'info'});
+  if(tabort>0)findings.push({icon:'\u274c',text:'<strong>'+tabort+'</strong> produkter rekommenderas att tas bort.',sev:'info'});
+  if(avgMargP>=T.margGreen)findings.push({icon:'\u2705',text:'Genomsnittlig marginal (<strong>'+fmtP(avgMargP)+'</strong>) \u00e4r \u00f6ver m\u00e5let p\u00e5 '+T.margGreen+'%.',sev:'success'});
+
+  if(!findings.length)findings.push({icon:'\u2705',text:'Inga anm\u00e4rkningsv\u00e4rda avvikelser hittades.',sev:'success'});
+  findings.forEach(function(f){
+    html+='<div class="report-finding report-finding-'+f.sev+'"><span class="report-finding-icon">'+f.icon+'</span><span>'+f.text+'</span></div>';
+  });
+  html+='</div></div>';
+
+  // Top 5 products
+  html+='<div class="report-section"><div class="report-section-title">\ud83c\udfc6 Topp 5 produkter (h\u00f6gst po\u00e4ng)</div>';
+  html+='<div class="table-wrap"><div class="table-scroll" style="max-height:none"><table><thead><tr><th>#</th><th>Produkt</th><th>KAT</th><th class="nr">Antal</th><th class="nr">Marg %</th><th class="nr">BV kr</th><th class="nr">Po\u00e4ng</th><th>Niv\u00e5</th></tr></thead><tbody>';
+  top5.forEach(function(x,i){html+=prodRow(x,i+1)});
+  html+='</tbody></table></div></div></div>';
+
+  // Worst 5 by BV
+  html+='<div class="report-section"><div class="report-section-title">\ud83d\udcc9 Botten 5 produkter (l\u00e4gst bruttovinst)</div>';
+  html+='<div class="table-wrap"><div class="table-scroll" style="max-height:none"><table><thead><tr><th>#</th><th>Produkt</th><th>KAT</th><th class="nr">Antal</th><th class="nr">Marg %</th><th class="nr">BV kr</th><th class="nr">Po\u00e4ng</th><th>Niv\u00e5</th></tr></thead><tbody>';
+  worst5bv.forEach(function(x,i){html+=prodRow(x,i+1)});
+  html+='</tbody></table></div></div></div>';
+
+  // Top svinn
+  if(topSvinn.length){
+    html+='<div class="report-section"><div class="report-section-title">\ud83d\uddd1 St\u00f6rst svinn (FYS kr)</div>';
+    html+='<div class="table-wrap"><div class="table-scroll" style="max-height:none"><table><thead><tr><th>#</th><th>Produkt</th><th>KAT</th><th class="nr">Antal</th><th class="nr">FYS kr</th><th class="nr">FYS %</th><th class="nr">Po\u00e4ng</th><th>Niv\u00e5</th></tr></thead><tbody>';
+    topSvinn.forEach(function(x,i){
+      var ffR=x.ffpct>0?x.ffpct:(x.forsv>0?x.ff/x.forsv*100:0);
+      html+='<tr><td class="nr" style="color:var(--mut)">'+(i+1)+'</td>'+
+        '<td style="font-size:11px;max-width:180px">'+x.ben+'</td>'+
+        '<td class="mc">'+x.kat+'</td>'+
+        '<td class="nr">'+fmt(x.antal)+'</td>'+
+        '<td class="nr cr">'+fmt(x.ff)+' kr</td>'+
+        '<td class="nr cr">'+fmtP(ffR)+'</td>'+
+        '<td class="nr" style="color:var(--mut)">'+x.score+'</td>'+
+        '<td><span class="badge '+TIER_BADGE[x.tier]+'" style="font-size:8px">'+x.tier+'</span></td></tr>';
+    });
+    html+='</tbody></table></div></div></div>';
+  }
+
+  // Best & worst KAT
+  html+='<div class="report-section"><div class="report-section-title">\ud83d\udcca B\u00e4sta kategorier (bruttovinst)</div>';
+  html+='<div class="table-wrap"><div class="table-scroll" style="max-height:none"><table><thead><tr><th>KAT</th><th>Namn</th><th class="nr">Produkter</th><th class="nr">Marg %</th><th class="nr">FYS %</th><th class="nr">BV kr</th></tr></thead><tbody>';
+  bestKat.forEach(function(k){
+    var mpC=k.margPct>=T.margGreen?'cg':k.margPct>=T.margAmber?'ca':'cr';
+    html+='<tr><td class="mc">'+k.kat+'</td><td style="font-size:11px">'+(KAT_NAMES[k.kat]||'\u2013')+'</td>'+
+      '<td class="nr">'+k.count+'</td><td class="nr '+mpC+'">'+fmtP(k.margPct)+'</td>'+
+      '<td class="nr '+(k.fysPct>=T.fysRed?'cr':'')+'">'+fmtP(k.fysPct)+'</td>'+
+      '<td class="nr">'+fmt(k.bv)+' kr</td></tr>';
+  });
+  html+='</tbody></table></div></div></div>';
+
+  html+='<div class="report-section"><div class="report-section-title">\u26a0 Svagaste kategorier (bruttovinst)</div>';
+  html+='<div class="table-wrap"><div class="table-scroll" style="max-height:none"><table><thead><tr><th>KAT</th><th>Namn</th><th class="nr">Produkter</th><th class="nr">Marg %</th><th class="nr">FYS %</th><th class="nr">BV kr</th></tr></thead><tbody>';
+  worstKat.forEach(function(k){
+    var mpC=k.margPct>=T.margGreen?'cg':k.margPct>=T.margAmber?'ca':'cr';
+    html+='<tr><td class="mc">'+k.kat+'</td><td style="font-size:11px">'+(KAT_NAMES[k.kat]||'\u2013')+'</td>'+
+      '<td class="nr">'+k.count+'</td><td class="nr '+mpC+'">'+fmtP(k.margPct)+'</td>'+
+      '<td class="nr '+(k.fysPct>=T.fysRed?'cr':'')+'">'+fmtP(k.fysPct)+'</td>'+
+      '<td class="nr">'+fmt(k.bv)+' kr</td></tr>';
+  });
+  html+='</tbody></table></div></div></div>';
+
+  // Settings used
+  html+='<div class="report-section"><div class="report-section-title">\u2699 Inst\u00e4llningar som anv\u00e4nds</div>'+
+    '<div class="report-text" style="font-size:12px">'+
+    'Marg % gr\u00f6n \u2265'+T.margGreen+'% \u00b7 Marg % gul \u2265'+T.margAmber+'% \u00b7 FYS r\u00f6d \u2265'+T.fysRed+'% \u00b7 '+
+    'BV gr\u00f6n \u2265'+fmt(T.bvGreenKr)+' kr \u00b7 BV % gul <'+T.bvAmberPct+'% \u00b7 Marg-tak '+T.margCap+'%'+
+    '</div></div>';
+
+  document.getElementById('report-container').innerHTML=html;
+}
+
 /* Alerts / Warnings system */
 
 function buildAlerts(){

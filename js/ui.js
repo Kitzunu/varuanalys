@@ -1,3 +1,38 @@
+/* Toast notification system */
+
+var toastQueue=[];
+var toastActive=false;
+
+function showToast(message,type){
+  type=type||'info'; // info, success, warning, error
+  toastQueue.push({message:message,type:type});
+  if(!toastActive)processToast();
+}
+
+function processToast(){
+  if(!toastQueue.length){toastActive=false;return}
+  toastActive=true;
+  var t=toastQueue.shift();
+  var el=document.getElementById('toast');
+  if(!el){
+    el=document.createElement('div');
+    el.id='toast';
+    document.body.appendChild(el);
+  }
+  var icons={info:'\u2139\ufe0f',success:'\u2705',warning:'\u26a0\ufe0f',error:'\u274c'};
+  el.className='toast toast-'+t.type;
+  el.innerHTML='<span class="toast-icon">'+(icons[t.type]||'')+'</span><span class="toast-msg">'+t.message+'</span>';
+  el.classList.add('toast-show');
+  setTimeout(function(){
+    el.classList.remove('toast-show');
+    el.classList.add('toast-hide');
+    setTimeout(function(){
+      el.classList.remove('toast-hide');
+      processToast();
+    },300);
+  },2800);
+}
+
 /* UI rendering: dashboard, metrics, tabs, product table, sorting, dropdowns */
 
 function showDash(){
@@ -63,16 +98,16 @@ function setTier(t){activeTier=t;buildTabs();renderTable();saveSession()}
 function setView(v){
   if(v==='weights')v='settings';
   currentView=v;
-  var views=['products','vom','kat','movers','svinn','katcomp','charts','alerts'];
+  var views=['products','vom','kat','movers','svinn','katcomp','charts','report','alerts'];
   document.querySelectorAll('.view-tab').forEach(function(t,i){
     t.classList.toggle('active',views[i]===v);
   });
   document.getElementById('view-products').style.display=v==='products'?'block':'none';
-  ['vom','kat','movers','svinn','katcomp','settings','charts','alerts'].forEach(function(k){
+  ['vom','kat','movers','svinn','katcomp','settings','charts','report','alerts'].forEach(function(k){
     var el=document.getElementById('view-'+k);
     if(!el)return;
     el.classList.toggle('visible',v===k);
-    if(v===k){requestAnimationFrame(setTableHeight);if(k==='movers')buildMovers();if(k==='svinn')buildSvinn();if(k==='katcomp')buildKatComp();if(k==='charts')buildCharts();if(k==='alerts')buildAlerts();}
+    if(v===k){requestAnimationFrame(setTableHeight);if(k==='movers')buildMovers();if(k==='svinn')buildSvinn();if(k==='katcomp')buildKatComp();if(k==='charts')buildCharts();if(k==='report')buildReport();if(k==='alerts')buildAlerts();}
   });
   if(allProducts.length)saveSession();
 }

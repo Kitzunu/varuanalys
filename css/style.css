@@ -285,6 +285,54 @@ th[data-tip]{cursor:pointer}
 .legend-container.open .legend-chevron{transform:rotate(0deg)}
 .legend-container:not(.open) .legend-chevron{transform:rotate(-90deg)}
 
+/* Report view */
+.report-header{margin-bottom:24px}
+.report-title{font-family:var(--disp);font-size:22px;font-weight:800;margin-bottom:6px}
+.report-meta{font-size:12px;color:var(--mut);line-height:1.6}
+.report-section{background:var(--surf);border:1px solid var(--brd);border-radius:12px;padding:20px 24px;margin-bottom:16px}
+.report-section-title{font-family:var(--disp);font-size:14px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.report-text{font-size:13px;line-height:1.8;color:var(--txt)}
+.report-text strong{font-family:var(--mono)}
+.report-bars{display:flex;flex-direction:column;gap:8px}
+.report-bar-row{display:flex;align-items:center;gap:12px}
+.report-bar-label{width:110px;font-size:12px;font-weight:600;font-family:var(--disp);text-align:right}
+.report-bar-track{flex:1;height:8px;background:var(--surf2);border-radius:4px;overflow:hidden}
+.report-bar-fill{height:100%;border-radius:4px;transition:width .3s ease}
+.report-bar-val{width:80px;font-size:11px;font-family:var(--mono);color:var(--mut)}
+.report-findings{display:flex;flex-direction:column;gap:8px}
+.report-finding{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-radius:8px;font-size:12px;line-height:1.5}
+.report-finding-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.report-finding-danger{background:rgba(240,96,96,.06);border:1px solid rgba(240,96,96,.15)}
+.report-finding-warning{background:rgba(240,184,96,.06);border:1px solid rgba(240,184,96,.15)}
+.report-finding-info{background:rgba(96,212,240,.05);border:1px solid rgba(96,212,240,.12)}
+.report-finding-success{background:rgba(96,212,160,.05);border:1px solid rgba(96,212,160,.12)}
+
+/* Heatmap chart */
+.heatmap-table{width:100%;border-collapse:collapse;font-size:12px}
+.heatmap-corner{background:var(--surf2);padding:8px 12px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);border-bottom:1px solid var(--brd);position:sticky;left:0;z-index:2}
+.heatmap-th{background:var(--surf2);padding:8px 14px;text-align:center;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);border-bottom:1px solid var(--brd);white-space:nowrap;min-width:90px}
+.heatmap-label{padding:6px 12px;font-size:11px;color:var(--txt);white-space:nowrap;border-bottom:1px solid var(--brd);position:sticky;left:0;background:var(--surf);z-index:1;max-width:200px;overflow:hidden;text-overflow:ellipsis}
+.heatmap-kat-id{font-family:var(--mono);font-size:10px;color:var(--mut);margin-right:4px}
+.heatmap-cell{padding:8px 12px;text-align:center;font-family:var(--mono);font-size:12px;font-weight:600;border-bottom:1px solid var(--brd);transition:background .15s}
+.heatmap-table tr:hover .heatmap-cell{filter:brightness(1.2)}
+.heatmap-table tr:hover .heatmap-label{background:var(--surf2)}
+.heatmap-table tr:last-child td{border-bottom:none}
+
+/* Toast notifications */
+.toast{position:fixed;bottom:24px;right:24px;z-index:10000;background:var(--surf);border:1px solid var(--brd2);border-radius:10px;padding:12px 18px;font-size:13px;color:var(--txt);display:flex;align-items:center;gap:10px;box-shadow:0 8px 28px rgba(0,0,0,.45);transform:translateY(20px);opacity:0;transition:transform .3s ease,opacity .3s ease;pointer-events:none;max-width:420px}
+.toast-show{transform:translateY(0);opacity:1;pointer-events:auto}
+.toast-hide{transform:translateY(20px);opacity:0}
+.toast-icon{font-size:16px;flex-shrink:0}
+.toast-msg{line-height:1.4}
+.toast-success{border-color:rgba(96,212,160,.3);background:rgba(96,212,160,.08)}
+.toast-success .toast-msg{color:var(--grn)}
+.toast-warning{border-color:rgba(240,184,96,.3);background:rgba(240,184,96,.08)}
+.toast-warning .toast-msg{color:var(--amb)}
+.toast-error{border-color:rgba(240,96,96,.3);background:rgba(240,96,96,.08)}
+.toast-error .toast-msg{color:var(--red)}
+.toast-info{border-color:rgba(96,212,240,.25);background:rgba(96,212,240,.06)}
+.toast-info .toast-msg{color:var(--acc2)}
+
 .alert-group{margin-bottom:24px}
 .alert-group-title{font-family:var(--disp);font-size:14px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
 .alert-group-desc{font-size:11px;color:var(--mut);margin-bottom:12px;line-height:1.5}
