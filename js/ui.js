@@ -3,7 +3,6 @@
 function showDash(){
   document.getElementById('loading-screen').style.display='none';
   document.getElementById('upload-screen').style.display='none';
-  document.getElementById('theme-toggle-upload').style.display='none';
   document.getElementById('dashboard').style.display='block';
   document.getElementById('file-name-disp').textContent=fileName;
 }

@@ -1,9 +1,7 @@
 /* Theme toggle */
 function applyTheme(theme){
   document.documentElement.classList.toggle('light',theme==='light');
-  var label=theme==='light'?'☾ Mörkt':'☀ Ljust';
-  document.getElementById('theme-toggle-upload').textContent=label;
-  document.getElementById('theme-toggle-dash').textContent=label;
+  document.getElementById('theme-toggle-dash').textContent=theme==='light'?'☾ Mörkt':'☀ Ljust';
 }
 function toggleTheme(){
   var isLight=document.documentElement.classList.contains('light');
@@ -39,7 +37,6 @@ function resetApp(){
   allProducts=[];activeTier='all';sortField='score';sortDir='desc';fileName='';highlightMode=false;currentView='products';sumSortState={};
   document.getElementById('dashboard').style.display='none';
   document.getElementById('upload-screen').style.display='flex';
-  document.getElementById('theme-toggle-upload').style.display='';
   document.getElementById('file-input').value='';
   document.getElementById('search').value='';
   document.getElementById('sort-sel').value='score|desc';

@@ -69,9 +69,6 @@ html.light{
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--txt);font-family:var(--sans);min-height:100vh}
-.theme-toggle{position:fixed;top:16px;right:16px;z-index:200;background:var(--surf2);border:1px solid var(--brd2);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:14px;color:var(--txt);font-family:var(--sans);transition:all .15s;display:flex;align-items:center;gap:6px;line-height:1}
-.theme-toggle:hover{border-color:var(--acc);color:var(--acc)}
-#dashboard .theme-toggle{position:static}
 #upload-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;position:relative}
 #upload-screen::before{content:'';position:fixed;top:-200px;left:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(200,240,96,.06),transparent 70%);pointer-events:none}
 .logo{font-family:var(--disp);font-size:13px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--acc);margin-bottom:60px;opacity:.8}
