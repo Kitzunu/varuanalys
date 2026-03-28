@@ -151,6 +151,15 @@ function getWeights(){
   return{vol:vol/100,marg:marg/100,margpct:margpct/100,svinn:svinn/100,bv:bv/100,sum:sum};
 }
 
+function updateWeightsLegend(){
+  var v=document.getElementById('w-vol').value||0;
+  var m=document.getElementById('w-marg').value||0;
+  var mp=document.getElementById('w-margpct').value||0;
+  var s=document.getElementById('w-svinn').value||0;
+  var b=document.getElementById('w-bv').value||0;
+  document.getElementById('legend-weights').textContent='Volym '+v+'% · Marginal kr '+m+'% · Marginal % '+mp+'% · Svinnstraff '+s+'% · Bruttovinst '+b+'%';
+}
+
 function updateWeights(){
   var W=getWeights();
   var sumEl=document.getElementById('weights-sum');
@@ -160,6 +169,7 @@ function updateWeights(){
   ['w-vol','w-marg','w-margpct','w-svinn','w-bv'].forEach(function(id){
     document.getElementById(id).classList.toggle('err',W.sum!==100);
   });
+  updateWeightsLegend();
   if(W.sum!==100){
     errEl.textContent='Vikterna summerar till '+W.sum+'% — måste vara exakt 100%.';
     errEl.style.display='block';

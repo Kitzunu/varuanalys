@@ -80,6 +80,7 @@ function resetApp(){
     var sumEl=document.getElementById('weights-sum');
     sumEl.textContent=W.sum+'%';
     sumEl.style.color=W.sum===100?'var(--grn)':'var(--red)';
+    updateWeightsLegend();
   }
 
   // Restore state

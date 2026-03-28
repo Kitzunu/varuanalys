@@ -34,17 +34,17 @@ function buildMetrics(){
   var tb=p.filter(function(x){return isExcludedTier(x.tier)}).length;
   var T=getThresholds();
   var margClass=avgMargP>=T.margGreen?'m-green':avgMargP>=T.margAmber?'m-amber':'m-danger';
-  var bvClass=avgBvP>=T.margGreen?'m-green':avgBvP>=T.margAmber?'m-amber':avgBvP>0?'':'m-danger';
+  var bvClass=avgBvP<0?'m-danger':avgBvP<T.bvAmberPct?'m-amber':'m-green';
   var fysClass=avgSvP>=T.fysRed?'m-danger':'';
   document.getElementById('metrics-grid').innerHTML=
     '<div class="metric" data-tip="Totalt antal unika produktrader i den importerade rapporten"><div class="metric-label">Produkter</div><div class="metric-value">'+p.length+'</div><div class="metric-sub">i rapporten</div></div>'+
     '<div class="metric" data-tip="Totalt antal sålda enheter av alla produkter under rapportens period"><div class="metric-label">Sålda enheter</div><div class="metric-value">'+totalA.toLocaleString('sv')+'</div><div class="metric-sub">perioden</div></div>'+
     '<div class="metric m-blue" data-tip="Total omsättning i kronor – summan av alla produkters försäljningsvärde"><div class="metric-label">Försäljningsvärde</div><div class="metric-value">'+Math.round(totalForsv).toLocaleString('sv')+'</div><div class="metric-sub">kr perioden</div></div>'+
-    '<div class="metric m-green" data-tip="Total marginal i kronor – skillnaden mellan försäljningsvärde och inköpskostnad"><div class="metric-label">Total marginal</div><div class="metric-value">'+Math.round(totalMarg).toLocaleString('sv')+'</div><div class="metric-sub">kr perioden</div></div>'+
+    '<div class="metric '+margClass+'" data-tip="Total marginal i kronor – färg följer Marg %"><div class="metric-label">Total marginal</div><div class="metric-value">'+Math.round(totalMarg).toLocaleString('sv')+'</div><div class="metric-sub">kr perioden</div></div>'+
     '<div class="metric '+margClass+'" data-tip="Genomsnittlig marginalprocent – grön ≥'+T.margGreen+'%, gul ≥'+T.margAmber+'%, röd under"><div class="metric-label">Marg %</div><div class="metric-value">'+avgMargP.toFixed(1)+'%</div><div class="metric-sub">marg/försäljning</div></div>'+
     '<div class="metric '+fysClass+'" data-tip="Fysisk förlust i procent av försäljningsvärdet. Markeras röd vid ≥'+T.fysRed+'%"><div class="metric-label">FYS %</div><div class="metric-value">'+avgSvP.toFixed(1)+'%</div><div class="metric-sub">av försäljning</div></div>'+
     '<div class="metric '+fysClass+'" data-tip="Total fysisk förlust i kronor – summan av allt svinn, stöld och kassation under perioden"><div class="metric-label">Total FYS</div><div class="metric-value">'+Math.round(totalFF).toLocaleString('sv')+'</div><div class="metric-sub">kr förlorat</div></div>'+
-    '<div class="metric '+bvClass+'" data-tip="Bruttovinstprocent – grön ≥'+T.margGreen+'%, gul ≥'+T.margAmber+'%, röd under"><div class="metric-label">BV %</div><div class="metric-value">'+avgBvP.toFixed(1)+'%</div><div class="metric-sub">bv/försäljning</div></div>'+
+    '<div class="metric '+bvClass+'" data-tip="Bruttovinstprocent (marginal minus FYS) – röd &lt;0%, gul &lt;'+T.bvAmberPct+'%, grön ≥'+T.bvAmberPct+'%"><div class="metric-label">BV %</div><div class="metric-value">'+avgBvP.toFixed(1)+'%</div><div class="metric-sub">bv/försäljning</div></div>'+
     '<div class="metric" data-tip="Total bruttovinst i kronor – marginal minus fysisk förlust för alla produkter"><div class="metric-label">Total bruttovinst</div><div class="metric-value">'+Math.round(totalBv).toLocaleString('sv')+'</div><div class="metric-sub">kr perioden</div></div>'+
     '';
 }
