@@ -1,3 +1,18 @@
+/* Theme toggle */
+function applyTheme(theme){
+  document.documentElement.classList.toggle('light',theme==='light');
+  var label=theme==='light'?'☾ Mörkt':'☀ Ljust';
+  document.getElementById('theme-toggle-upload').textContent=label;
+  document.getElementById('theme-toggle-dash').textContent=label;
+}
+function toggleTheme(){
+  var isLight=document.documentElement.classList.contains('light');
+  var next=isLight?'dark':'light';
+  localStorage.setItem('va-theme',next);
+  applyTheme(next);
+}
+(function(){var t=localStorage.getItem('va-theme')||'dark';applyTheme(t)})();
+
 /* Initialization: drag/drop, event listeners, session restore, reset */
 
 var dz=document.getElementById('drop-zone'),fi=document.getElementById('file-input');

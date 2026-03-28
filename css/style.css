@@ -61,8 +61,17 @@
   --acc:#c8f060;--acc2:#60d4f0;--red:#f06060;--amb:#f0b860;--grn:#60d4a0;
   --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;--disp:'Syne',sans-serif;
 }
+html.light{
+  --bg:#f5f5f0;--surf:#ffffff;--surf2:#eeeee8;
+  --brd:rgba(0,0,0,.08);--brd2:rgba(0,0,0,.14);
+  --txt:#1a1a18;--mut:#7a7870;
+  --acc:#4a7a00;--acc2:#0090b0;--red:#d03030;--amb:#b07800;--grn:#1a8a60;
+}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--txt);font-family:var(--sans);min-height:100vh}
+.theme-toggle{position:fixed;top:16px;right:16px;z-index:200;background:var(--surf2);border:1px solid var(--brd2);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:14px;color:var(--txt);font-family:var(--sans);transition:all .15s;display:flex;align-items:center;gap:6px;line-height:1}
+.theme-toggle:hover{border-color:var(--acc);color:var(--acc)}
+#dashboard .theme-toggle{position:static}
 #upload-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;position:relative}
 #upload-screen::before{content:'';position:fixed;top:-200px;left:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(200,240,96,.06),transparent 70%);pointer-events:none}
 .logo{font-family:var(--disp);font-size:13px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--acc);margin-bottom:60px;opacity:.8}
@@ -83,6 +92,14 @@ body{background:var(--bg);color:var(--txt);font-family:var(--sans);min-height:10
 .loading-text{font-family:var(--disp);font-size:15px;color:var(--mut)}
 #dashboard{display:none}
 .topbar{padding:14px 28px;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;background:rgba(15,15,14,.95);backdrop-filter:blur(12px);z-index:100;flex-wrap:wrap}
+html.light .topbar{background:rgba(245,245,240,.95)}
+html.light #upload-screen::before{background:radial-gradient(circle,rgba(74,122,0,.06),transparent 70%)}
+html.light .drop-zone:hover,html.light .drop-zone.drag-over{background:rgba(74,122,0,.04)}
+html.light .btn-hl.active{background:rgba(74,122,0,.1);border-color:rgba(74,122,0,.35)}
+html.light .m-accent{border-color:rgba(74,122,0,.25);background:rgba(74,122,0,.04)}
+html.light .tp-p{background:rgba(74,122,0,.1);border-color:rgba(74,122,0,.3)}
+html.light .hl-p td{background:rgba(74,122,0,.07)!important}
+html.light .bg-p{background:rgba(74,122,0,.12);border-color:rgba(74,122,0,.22)}
 .topbar-left{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .topbar-logo{font-family:var(--disp);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--acc)}
 .topbar-file{font-family:var(--mono);font-size:11px;color:var(--mut)}

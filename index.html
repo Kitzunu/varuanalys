@@ -8,10 +8,11 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/style.css?v=2">
 </head>
 <body>
 
+<button class="theme-toggle" id="theme-toggle-upload" onclick="toggleTheme()">☀ Ljust</button>
 <div id="upload-screen">
   <div class="logo">
     <img src="img/logo.png" style="width: 458px; height: auto;" draggable="false">
@@ -47,6 +48,7 @@
       <button class="btn-new" onclick="exportExcel()">↓ Excel</button>
       <button class="btn-new" onclick="exportPDF()">↓ PDF</button>
       <button class="btn-new" onclick="resetApp()">+ Ny fil</button>
+      <button class="btn-new theme-toggle" id="theme-toggle-dash" onclick="toggleTheme()">☀ Ljust</button>
     </div>
   </div>
 
@@ -401,6 +403,6 @@
 <script src="js/views.js"></script>
 <script src="js/export.js"></script>
 <script src="js/charts.js"></script>
-<script src="js/app.js"></script>
+<script src="js/app.js?v=2"></script>
 </body>
 </html>
