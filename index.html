@@ -44,6 +44,7 @@
     </div>
     <div style="display:flex;gap:8px;align-items:center">
       <button class="btn-new btn-hl" id="hl-btn" onclick="toggleHighlight()" data-tip="Färgmarkera rader efter nivå – gör det lättare att visuellt skilja grupper åt">◐ Highlight</button>
+      <button class="btn-new" onclick="setView('settings')" data-tip="Vikter, tröskelvärden och färgkodning">⚙ Inställningar</button>
       <button class="btn-new" id="theme-toggle-dash" onclick="toggleTheme()" data-tip="Växla mellan mörkt och ljust tema">☀ Ljust</button>
       <button class="btn-new" onclick="exportExcel()" data-tip="Exportera alla produkter till en formaterad Excel-fil">↓ Excel</button>
       <button class="btn-new" onclick="exportPDF()" data-tip="Exportera sammanfattningar och tabeller till PDF">↓ PDF</button>
@@ -60,8 +61,6 @@
       <div class="legend">
         <span style="font-family:var(--disp);font-size:11px;font-weight:600;color:var(--txt)">Poängmodell:</span>
         <span>Volym 40%</span><span>·</span><span>Marginal kr 20%</span><span>·</span><span>Marginal % 15%</span><span>·</span><span>Svinnstraff 10%</span><span>·</span><span>Bruttovinst 15%</span>
-        <span style="color:var(--brd2)">|</span>
-        <span style="cursor:pointer;color:var(--acc2)" onclick="setView('settings')" title="Klicka för att ändra vikter och inställningar">⚙ Inställningar</span>
         <span style="color:var(--brd2)">|</span>
         <span title="Rangordnas relativt inom KAT. Topp 10% = Prioritet, 11–40% = Bra, 41–80% = Genomsnittlig, botten 20% = Låg">Poängsättning baseras på artiklar ur samma kategori</span>
       </div>
@@ -88,7 +87,6 @@
       <button class="view-tab" onclick="setView('svinn')" data-tip="Produkter med hög fysisk förlust (FYS) som bör ses över">Svinn watchlist</button>
       <button class="view-tab" onclick="setView('katcomp')" data-tip="Jämför nyckeltal mellan kategorier sida vid sida">KAT jämförelse</button>
       <button class="view-tab" onclick="setView('charts')" data-tip="Visuella diagram över försäljning, marginaler och fördelning">Diagram</button>
-      <button class="view-tab" onclick="setView('settings')" data-tip="Alla inställningar – vikter, tröskelvärden och färgkodning">⚙ Inställningar</button>
     </div>
 
     <!-- Charts view -->

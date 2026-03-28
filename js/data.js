@@ -211,8 +211,14 @@ function updateThreshold(key,val){
   var n=parseFloat(val);
   if(isNaN(n))return;
   THRESHOLDS[key]=n;
-  if(key==='margCap'&&allProducts.length){rescoreAndRender();return}
-  if(allProducts.length){buildMetrics();renderPageRows();saveSession()}
+  if(!allProducts.length)return;
+  if(key==='margCap'){rescoreAndRender();return}
+  buildMetrics();renderPageRows();
+  if(currentView==='vom'||currentView==='kat')buildSummaries();
+  if(currentView==='movers')buildMovers();
+  if(currentView==='svinn')buildSvinn();
+  if(currentView==='katcomp')buildKatComp();
+  saveSession();
 }
 
 function resetAllSettings(){
